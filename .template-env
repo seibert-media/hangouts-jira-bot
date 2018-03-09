@@ -1,0 +1,9 @@
+export TEMP_ORG=//S/M
+export TEMP_NAME=hangouts-jira-bot
+export TEMP_KEY=hangouts-jira-bot
+export TEMP_GIT_ORG=seibert-media
+export TEMP_GIT_HOST=github.com
+export TEMP_DOCKER_HOST=quay.io
+export TEMP_DOCKER_ORG=seibertmedia
+export TEMP_DOCKER_IMAGE=${TEMP_NAME}
+export TEMP_DOCKER_MAINTAINER="//SEIBERT/MEDIA GmbH <docker@seibert-media.net>"
