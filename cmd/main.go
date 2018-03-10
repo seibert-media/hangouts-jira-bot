@@ -42,8 +42,14 @@ func main() {
 	flag.Parse()
 
 	if *versionInfo {
+		v := version.Version()
 		fmt.Printf("-- //S/M %s --\n", appName)
-		version.PrintFull()
+		fmt.Printf(" - version: %s\n", v.Version)
+		fmt.Printf("   branch: \t%s\n", v.Branch)
+		fmt.Printf("   revision: \t%s\n", v.Revision)
+		fmt.Printf("   build date: \t%s\n", v.BuildDate)
+		fmt.Printf("   build user: \t%s\n", v.BuildUser)
+		fmt.Printf("   go version: \t%s\n", v.GoVersion)
 	}
 	runtime.GOMAXPROCS(*maxprocs)
 
@@ -58,8 +64,6 @@ func main() {
 	log := log.New(appKey, *sentryDsn, *dbg).WithFields(zapFields...)
 	defer log.Sync()
 	log.Info("preparing")
-
-	fmt.Println("main.go")
 
 	err := do(log)
 	if err != nil {
