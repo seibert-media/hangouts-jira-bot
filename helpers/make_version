@@ -21,7 +21,7 @@ endif
 
 # set version information
 KIT_VERSION = "\
-	-X ${GIT_HOST}/${REPO}/${NAME}/vendor/github.com/kolide/kit/version.appName=${APP_NAME} \
+	-X ${GIT_HOST}/${REPO}/${NAME}/vendor/github.com/kolide/kit/version.appName=${NAME} \
 	-X ${GIT_HOST}/${REPO}/${NAME}/vendor/github.com/kolide/kit/version.version=${VERSION} \
 	-X ${GIT_HOST}/${REPO}/${NAME}/vendor/github.com/kolide/kit/version.branch=${BRANCH} \
 	-X ${GIT_HOST}/${REPO}/${NAME}/vendor/github.com/kolide/kit/version.revision=${REVISION} \
