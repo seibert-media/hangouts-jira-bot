@@ -70,7 +70,7 @@ func (j *JIRA) Callback(ctx context.Context, m *pubsub.Message) {
 	issues := regex.FindAllString(msg.Message.Text, -1)
 	for _, issue := range issues {
 		j.Debug("handling issue", zap.String("id", issue))
-		card, err := j.BuildCard(issue)
+		card, err := j.BuildCard(issue, msg)
 		if err != nil {
 			j.Warn("build card failed", zap.Error(err))
 			return
@@ -83,13 +83,14 @@ func (j *JIRA) Callback(ctx context.Context, m *pubsub.Message) {
 }
 
 // BuildCard for issue
-func (j *JIRA) BuildCard(issue string) (string, error) {
+func (j *JIRA) BuildCard(issue string, msg hangouts.Event) (string, error) {
 	i, _, err := j.Client.Issue.Get(issue, nil)
 	if err != nil {
 		j.Debug("jira issue fetch error", zap.String("issue", issue), zap.Error(err))
 		return "", err
 	}
-	/*card := hangouts.Card{
+	/*
+		card := hangouts.Card{
 		Header: hangouts.Header{
 			Title:      issue,
 			Subtitle:   i.Fields.Summary,
@@ -141,8 +142,11 @@ func (j *JIRA) BuildCard(issue string) (string, error) {
 				},
 			},
 		},
-	}*/
-	card := fmt.Sprintf(`{ "cards": [
+		}
+	*/
+	card := fmt.Sprintf(`{ 
+		"thread": {"name": "%s"},
+		"cards": [
 		{
 		"header": {
 			"title": "%s",
@@ -179,6 +183,6 @@ func (j *JIRA) BuildCard(issue string) (string, error) {
 				}]
 			}
 		]
-	}]}`, issue, i.Fields.Summary, i.Fields.Status.Name, i.Fields.Description, j.baseURL, issue)
+	}]}`, msg.Message.Thread.Name, issue, i.Fields.Summary, i.Fields.Status.Name, i.Fields.Description, j.baseURL, issue)
 	return card, nil
 }
