@@ -1,0 +1,20 @@
+language: go
+
+go:
+  - 1.9.x
+
+env:
+  global:
+  - REPO: $TRAVIS_REPO_SLUG
+  - VERSION: $TRAVIS_TAG
+
+before_install:
+  - make deps
+
+before_script:
+  - make test
+
+script:
+- make docker
+- docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" quay.io
+- make upload

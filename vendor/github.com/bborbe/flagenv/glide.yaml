@@ -1,0 +1,5 @@
+package: github.com/bborbe/flagenv
+import:
+- package: github.com/golang/glog
+testImport:
+- package: github.com/bborbe/assert
