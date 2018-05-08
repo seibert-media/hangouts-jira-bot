@@ -46,16 +46,16 @@ func NewWebhookClient(log *log.Logger, url string) (*Hangouts, error) {
 
 // SendCard to Hangouts
 // space can be left empty if using webhooks
-func (h *Hangouts) SendCard(space string, card *Card) error {
-	/*msg := Message{
+func (h *Hangouts) SendCard(space string, card Card) error {
+	msg := Message{
 		Cards: []Card{
 			card,
 		},
-	}*/
+	}
 	if h.URL == "" {
 		h.URL = fmt.Sprintf("https://chat.googleapis.com/v1/%s/messages", space)
 	}
-	data, err := json.Marshal(card)
+	data, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
