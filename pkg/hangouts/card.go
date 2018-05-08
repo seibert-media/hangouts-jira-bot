@@ -17,14 +17,14 @@ type Header struct {
 
 // Section struct
 type Section struct {
-	Header  Header   `json:"header,omitempty"`
+	Header  string   `json:"header,omitempty"`
 	Widgets []Widget `json:"widgets,omitempty"`
 }
 
 // Widget struct
 type Widget struct {
-	TextParagraph TextParagraph `json:"textParagraph,omitempty"`
-	KeyValue      KeyValue      `json:"keyValue,omitempty"`
+	TextParagraph *TextParagraph `json:"textParagraph,omitempty"`
+	KeyValue      *KeyValue      `json:"keyValue,omitempty"`
 }
 
 // ActionWidget struct
@@ -50,8 +50,8 @@ type KeyValue struct {
 
 // Button struct
 type Button struct {
-	TextButton  TextButton  `json:"textButton,omitempty"`
-	ImageButton ImageButton `json:"imageButton,omitempty"`
+	TextButton  *TextButton  `json:"textButton,omitempty"`
+	ImageButton *ImageButton `json:"imageButton,omitempty"`
 }
 
 // TextButton struct
