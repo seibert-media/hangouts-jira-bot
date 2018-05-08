@@ -25,11 +25,7 @@ type Section struct {
 type Widget struct {
 	TextParagraph *TextParagraph `json:"textParagraph,omitempty"`
 	KeyValue      *KeyValue      `json:"keyValue,omitempty"`
-}
-
-// ActionWidget struct
-type ActionWidget struct {
-	Buttons []Button `json:"buttons"`
+	Buttons       []*Button      `json:"buttons,omitempty"`
 }
 
 // TextParagraph struct
