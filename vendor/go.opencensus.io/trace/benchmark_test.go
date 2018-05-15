@@ -20,66 +20,86 @@ import (
 )
 
 func BenchmarkStartEndSpan(b *testing.B) {
-	ctx := context.Background()
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		_, span := StartSpan(ctx, "/foo")
-		span.End()
-	}
+	traceBenchmark(b, func(b *testing.B) {
+		ctx := context.Background()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			_, span := StartSpan(ctx, "/foo")
+			span.End()
+		}
+	})
 }
 
 func BenchmarkSpanWithAnnotations_3(b *testing.B) {
-	ctx := context.Background()
-	b.ResetTimer()
+	traceBenchmark(b, func(b *testing.B) {
+		ctx := context.Background()
+		b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
-		_, span := StartSpan(ctx, "/foo")
-		span.SetAttributes(
-			BoolAttribute{Key: "key1", Value: false},
-			StringAttribute{Key: "key2", Value: "hello"},
-			Int64Attribute{Key: "key3", Value: 123},
-		)
-		span.End()
-	}
+		for i := 0; i < b.N; i++ {
+			_, span := StartSpan(ctx, "/foo")
+			span.AddAttributes(
+				BoolAttribute("key1", false),
+				StringAttribute("key2", "hello"),
+				Int64Attribute("key3", 123),
+			)
+			span.End()
+		}
+	})
 }
 
 func BenchmarkSpanWithAnnotations_6(b *testing.B) {
-	ctx := context.Background()
-	b.ResetTimer()
+	traceBenchmark(b, func(b *testing.B) {
+		ctx := context.Background()
+		b.ResetTimer()
 
-	for i := 0; i < b.N; i++ {
-		_, span := StartSpan(ctx, "/foo")
-		span.SetAttributes(
-			BoolAttribute{Key: "key1", Value: false},
-			BoolAttribute{Key: "key2", Value: true},
-			StringAttribute{Key: "key3", Value: "hello"},
-			StringAttribute{Key: "key4", Value: "hello"},
-			Int64Attribute{Key: "key5", Value: 123},
-			Int64Attribute{Key: "key6", Value: 456},
-		)
-		span.End()
-	}
+		for i := 0; i < b.N; i++ {
+			_, span := StartSpan(ctx, "/foo")
+			span.AddAttributes(
+				BoolAttribute("key1", false),
+				BoolAttribute("key2", true),
+				StringAttribute("key3", "hello"),
+				StringAttribute("key4", "hello"),
+				Int64Attribute("key5", 123),
+				Int64Attribute("key6", 456),
+			)
+			span.End()
+		}
+	})
 }
 
 func BenchmarkTraceID_DotString(b *testing.B) {
-	b.ReportAllocs()
-	t := TraceID{0x0D, 0x0E, 0x0A, 0x0D, 0x0B, 0x0E, 0x0E, 0x0F, 0x0F, 0x0E, 0x0E, 0x0B, 0x0D, 0x0A, 0x0E, 0x0D}
-	want := "0d0e0a0d0b0e0e0f0f0e0e0b0d0a0e0d"
-	for i := 0; i < b.N; i++ {
-		if got := t.String(); got != want {
-			b.Fatalf("got = %q want = %q", got, want)
+	traceBenchmark(b, func(b *testing.B) {
+		t := TraceID{0x0D, 0x0E, 0x0A, 0x0D, 0x0B, 0x0E, 0x0E, 0x0F, 0x0F, 0x0E, 0x0E, 0x0B, 0x0D, 0x0A, 0x0E, 0x0D}
+		want := "0d0e0a0d0b0e0e0f0f0e0e0b0d0a0e0d"
+		for i := 0; i < b.N; i++ {
+			if got := t.String(); got != want {
+				b.Fatalf("got = %q want = %q", got, want)
+			}
 		}
-	}
+	})
 }
 
 func BenchmarkSpanID_DotString(b *testing.B) {
-	b.ReportAllocs()
-	s := SpanID{0x0D, 0x0E, 0x0A, 0x0D, 0x0B, 0x0E, 0x0E, 0x0F}
-	want := "0d0e0a0d0b0e0e0f"
-	for i := 0; i < b.N; i++ {
-		if got := s.String(); got != want {
-			b.Fatalf("got = %q want = %q", got, want)
+	traceBenchmark(b, func(b *testing.B) {
+		s := SpanID{0x0D, 0x0E, 0x0A, 0x0D, 0x0B, 0x0E, 0x0E, 0x0F}
+		want := "0d0e0a0d0b0e0e0f"
+		for i := 0; i < b.N; i++ {
+			if got := s.String(); got != want {
+				b.Fatalf("got = %q want = %q", got, want)
+			}
 		}
-	}
+	})
+}
+
+func traceBenchmark(b *testing.B, fn func(*testing.B)) {
+	b.Run("AlwaysSample", func(b *testing.B) {
+		b.ReportAllocs()
+		ApplyConfig(Config{DefaultSampler: AlwaysSample()})
+		fn(b)
+	})
+	b.Run("NeverSample", func(b *testing.B) {
+		b.ReportAllocs()
+		ApplyConfig(Config{DefaultSampler: NeverSample()})
+		fn(b)
+	})
 }

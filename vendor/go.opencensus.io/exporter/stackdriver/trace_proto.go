@@ -15,7 +15,6 @@
 package stackdriver
 
 import (
-	"fmt"
 	"math"
 	"time"
 	"unicode/utf8"
@@ -52,10 +51,18 @@ func protoFromSpanData(s *trace.SpanData, projectID string) *tracepb.Span {
 	traceIDString := s.SpanContext.TraceID.String()
 	spanIDString := s.SpanContext.SpanID.String()
 
+	name := s.Name
+	switch s.SpanKind {
+	case trace.SpanKindClient:
+		name = "Sent." + name
+	case trace.SpanKindServer:
+		name = "Recv." + name
+	}
+
 	sp := &tracepb.Span{
 		Name:                    "projects/" + projectID + "/traces/" + traceIDString + "/spans/" + spanIDString,
 		SpanId:                  spanIDString,
-		DisplayName:             trunc(s.Name, 128),
+		DisplayName:             trunc(name, 128),
 		StartTime:               timestampProto(s.StartTime),
 		EndTime:                 timestampProto(s.EndTime),
 		SameProcessAsParentSpan: &wrapperspb.BoolValue{Value: !s.HasRemoteParent},
@@ -136,7 +143,7 @@ func protoFromSpanData(s *trace.SpanData, projectID string) *tracepb.Span {
 		sp.Links.Link = make([]*tracepb.Span_Link, 0, len(s.Links))
 		for _, l := range s.Links {
 			link := &tracepb.Span_Link{
-				TraceId: fmt.Sprintf("projects/%s/traces/%s", projectID, l.TraceID),
+				TraceId: l.TraceID.String(),
 				SpanId:  l.SpanID.String(),
 				Type:    tracepb.Span_Link_Type(l.Type),
 			}
@@ -144,7 +151,6 @@ func protoFromSpanData(s *trace.SpanData, projectID string) *tracepb.Span {
 			sp.Links.Link = append(sp.Links.Link, link)
 		}
 	}
-
 	return sp
 }
 

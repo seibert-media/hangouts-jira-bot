@@ -19,26 +19,26 @@ import (
 	"net/http"
 
 	"go.opencensus.io/plugin/ochttp"
-	"go.opencensus.io/plugin/ochttp/propagation/google"
+	"go.opencensus.io/plugin/ochttp/propagation/b3"
 	"go.opencensus.io/stats/view"
 	"go.opencensus.io/tag"
 )
 
 func ExampleTransport() {
-	err := view.Subscribe(
-		// Subscribe to a few default views, with renaming
+	if err := view.Register(
+		// Register to a few default views.
 		ochttp.ClientRequestCountByMethod,
 		ochttp.ClientResponseCountByStatusCode,
 		ochttp.ClientLatencyView,
-		// Subscribe to a custom view
+
+		// Register to a custom view.
 		&view.View{
 			Name:        "httpclient_latency_by_hostpath",
 			TagKeys:     []tag.Key{ochttp.Host, ochttp.Path},
 			Measure:     ochttp.ClientLatency,
 			Aggregation: ochttp.DefaultLatencyDistribution,
 		},
-	)
-	if err != nil {
+	); err != nil {
 		log.Fatal(err)
 	}
 
@@ -63,6 +63,6 @@ func ExampleHandler_mux() {
 
 	log.Fatal(http.ListenAndServe("localhost:8080", &ochttp.Handler{
 		Handler:     mux,
-		Propagation: &google.HTTPFormat{}, // Uses Google's propagation format.
+		Propagation: &b3.HTTPFormat{},
 	}))
 }

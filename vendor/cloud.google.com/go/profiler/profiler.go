@@ -85,10 +85,11 @@ const (
 	xGoogAPIMetadata = "x-goog-api-client"
 	zoneNameLabel    = "zone"
 	versionLabel     = "version"
+	languageLabel    = "language"
 	instanceLabel    = "instance"
 	scope            = "https://www.googleapis.com/auth/monitoring.write"
 
-	initialBackoff = time.Second
+	initialBackoff = time.Minute
 	// Ensure the agent will recover within 1 hour.
 	maxBackoff        = time.Hour
 	backoffMultiplier = 1.3 // Backoff envelope increases by this factor on each retry.
@@ -262,6 +263,9 @@ func (a *agent) createProfile(ctx context.Context) *pb.Profile {
 	gax.Invoke(ctx, func(ctx context.Context, settings gax.CallSettings) error {
 		var err error
 		p, err = a.client.CreateProfile(ctx, &req, grpc.Trailer(&md))
+		if err != nil {
+			debugLog("failed to create a profile, will retry: %v", err)
+		}
 		return err
 	}, gax.WithRetry(func() gax.Retryer {
 		return &retryer{
@@ -398,7 +402,7 @@ func withXGoogHeader(ctx context.Context, keyval ...string) context.Context {
 }
 
 func initializeAgent(c pb.ProfilerServiceClient) *agent {
-	labels := map[string]string{}
+	labels := map[string]string{languageLabel: "go"}
 	if config.zone != "" {
 		labels[zoneNameLabel] = config.zone
 	}
@@ -495,6 +499,7 @@ func initializeConfig(cfg Config) error {
 // server for instructions, and collects and uploads profiles as
 // requested.
 func pollProfilerService(ctx context.Context, a *agent) {
+	debugLog("profiler has started")
 	for {
 		p := a.createProfile(ctx)
 		a.profileAndUpload(ctx, p)

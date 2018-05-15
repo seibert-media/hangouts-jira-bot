@@ -9,28 +9,23 @@
     "internal/optional",
     "internal/version",
     "pubsub",
-    "pubsub/apiv1"
+    "pubsub/apiv1",
+    "pubsub/internal/distribution"
   ]
-  revision = "20d4028b8a750c2aca76bf9fefa8ed2d0109b573"
-  version = "v0.19.0"
+  revision = "056a55f54a6cc77b440b31a56a5e7c3982d32811"
+  version = "v0.22.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/andygrunwald/go-jira"
   packages = ["."]
-  revision = "f9c91e2a6be53464f27662c88c89938be4fbe1c6"
-
-[[projects]]
-  name = "github.com/apache/thrift"
-  packages = ["lib/go/thrift"]
-  revision = "b2a4d4ae21c789b689dd162deb819665567f481c"
-  version = "0.10.0"
+  revision = "5cfdb85cc91c6299f75b6504a1d0ec174c21be39"
+  version = "v1.3.0"
 
 [[projects]]
   branch = "master"
   name = "github.com/bborbe/flagenv"
   packages = ["."]
-  revision = "4bf10dbe62f41ce40353a70225a84decfd16d3ac"
+  revision = "587926a26b10e5abceadb6b863527d7662581a87"
 
 [[projects]]
   name = "github.com/certifi/gocertifi"
@@ -54,7 +49,7 @@
   branch = "master"
   name = "github.com/getsentry/raven-go"
   packages = ["."]
-  revision = "563b81fc02b75d664e54da31f787c2cc2186780b"
+  revision = "7452746037452673b6ba6ceb6c8aa4cbf4634f9e"
 
 [[projects]]
   branch = "master"
@@ -73,8 +68,8 @@
     "ptypes/empty",
     "ptypes/timestamp"
   ]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -92,7 +87,7 @@
   branch = "master"
   name = "github.com/kolide/kit"
   packages = ["version"]
-  revision = "0a627333a265b0da482aa054b7e83f674bf87da9"
+  revision = "efbc10368270cec76483472fd8c02ecc54e15a0d"
 
 [[projects]]
   name = "github.com/opentracing/opentracing-go"
@@ -114,7 +109,13 @@
   branch = "master"
   name = "github.com/playnet-public/libs"
   packages = ["log"]
-  revision = "7f3f4978caff727207c8bcf3816d65920f28d17e"
+  revision = "079f78fdc719b889e0698ca9e3c872920ca00052"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/seibert-media/go-hangouts"
+  packages = ["."]
+  revision = "a4e3b371c485cb9ede2e51ea53aa94c7cac9d773"
 
 [[projects]]
   name = "github.com/trivago/tgo"
@@ -133,9 +134,12 @@
     "internal/baggage",
     "internal/baggage/remote",
     "internal/spanlog",
+    "internal/throttler",
+    "internal/throttler/remote",
     "log",
     "log/zap",
     "rpcmetrics",
+    "thrift",
     "thrift-gen/agent",
     "thrift-gen/baggage",
     "thrift-gen/jaeger",
@@ -143,39 +147,40 @@
     "thrift-gen/zipkincore",
     "utils"
   ]
-  revision = "3ac96c6e679cb60a74589b0d0aa7c70a906183f7"
-  version = "v2.11.2"
+  revision = "b043381d944715b469fd6b37addfd30145ca1758"
+  version = "v2.14.0"
 
 [[projects]]
   name = "github.com/uber/jaeger-lib"
   packages = ["metrics"]
-  revision = "4267858c0679cd4e47cefed8d7f70fd386cfb567"
-  version = "v1.4.0"
+  revision = "ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5"
+  version = "v1.5.0"
 
 [[projects]]
   name = "go.opencensus.io"
   packages = [
+    "exporter/stackdriver/propagation",
     "internal",
     "internal/tagencoding",
     "plugin/ocgrpc",
     "plugin/ochttp",
     "plugin/ochttp/propagation/b3",
-    "plugin/ochttp/propagation/google",
     "stats",
     "stats/internal",
     "stats/view",
     "tag",
     "trace",
+    "trace/internal",
     "trace/propagation"
   ]
-  revision = "52b12e1eb8fdf769ad0bf5fd73a2af9484e6b196"
-  version = "v0.4.0"
+  revision = "10cec2c05ea2cfb8b0d856711daedc49d8a45c56"
+  version = "v0.9.0"
 
 [[projects]]
   name = "go.uber.org/atomic"
   packages = ["."]
-  revision = "8474b86a5a6f79c443ce4b2992817ff32cf208b8"
-  version = "v1.3.1"
+  revision = "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289"
+  version = "v1.3.2"
 
 [[projects]]
   name = "go.uber.org/multierr"
@@ -193,8 +198,8 @@
     "internal/exit",
     "zapcore"
   ]
-  revision = "35aad584952c3e7020db7b839f6b102de6271f89"
-  version = "v1.7.1"
+  revision = "eeedf312bc6c57391d84767a4cd413f02a917974"
+  version = "v1.8.0"
 
 [[projects]]
   branch = "master"
@@ -202,14 +207,14 @@
   packages = [
     "context",
     "context/ctxhttp",
+    "http/httpguts",
     "http2",
     "http2/hpack",
     "idna",
     "internal/timeseries",
-    "lex/httplex",
     "trace"
   ]
-  revision = "d0aafc73d5cdc42264b0af071c261abac580695e"
+  revision = "2491c5de3490fced2f6cff376127c667efeed857"
 
 [[projects]]
   branch = "master"
@@ -221,7 +226,7 @@
     "jws",
     "jwt"
   ]
-  revision = "2f32c3ac0fa4fb807a0fcefb0b6f2468a0d99bd0"
+  revision = "cdc340f7c179dbbfa4afd43b7614e8fcadde4269"
 
 [[projects]]
   branch = "master"
@@ -230,7 +235,7 @@
     "errgroup",
     "semaphore"
   ]
-  revision = "fd80eb99c8f653c847d294a001bdf2a3a6f768f5"
+  revision = "1d60e4601c6fd243af51cc01ddf169918a5407ca"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -266,7 +271,7 @@
     "transport/grpc",
     "transport/http"
   ]
-  revision = "fd84a7d742f699417e6d39a933a987ff2386c99c"
+  revision = "d7aa31fbd7da4467a8056610e654315a4c1f068e"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -297,7 +302,7 @@
     "googleapis/rpc/status",
     "protobuf/field_mask"
   ]
-  revision = "df60624c1e9b9d2973e889c7a1cff73155da81c4"
+  revision = "7bb2a897381c9c5ab2aeb8614f758d7766af68ff"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -306,6 +311,7 @@
     "balancer",
     "balancer/base",
     "balancer/roundrobin",
+    "channelz",
     "codes",
     "connectivity",
     "credentials",
@@ -327,12 +333,12 @@
     "tap",
     "transport"
   ]
-  revision = "8e4536a86ab602859c20df5ebfd0bd4228d08655"
-  version = "v1.10.0"
+  revision = "41344da2231b913fa3d983840a57a6b1b7b631a1"
+  version = "v1.12.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "cc9a72791e96a5b1d679d0dbd61d46f2b5d92fab0b91067c2cfbdb5e1bef292f"
+  inputs-digest = "64df70aea37576ca7f1d49f969ebea1b06372799c890d81af01c01642deb45a0"
   solver-name = "gps-cdcl"
   solver-version = 1

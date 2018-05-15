@@ -20,9 +20,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/google/go-cmp/cmp"
-
 	"cloud.google.com/go/internal/testutil"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"google.golang.org/api/googleapi"
 	raw "google.golang.org/api/storage/v1"
 )
@@ -30,11 +30,14 @@ import (
 func TestBucketAttrsToRawBucket(t *testing.T) {
 	t.Parallel()
 	attrs := &BucketAttrs{
-		Name:              "name",
-		ACL:               []ACLRule{{Entity: "bob@example.com", Role: RoleOwner}},
-		DefaultObjectACL:  []ACLRule{{Entity: AllUsers, Role: RoleReader}},
-		Location:          "loc",
-		StorageClass:      "class",
+		Name:             "name",
+		ACL:              []ACLRule{{Entity: "bob@example.com", Role: RoleOwner}},
+		DefaultObjectACL: []ACLRule{{Entity: AllUsers, Role: RoleReader}},
+		Location:         "loc",
+		StorageClass:     "class",
+		RetentionPolicy: &RetentionPolicy{
+			RetentionPeriod: 3 * time.Second,
+		},
 		VersioningEnabled: false,
 		// should be ignored:
 		MetaGeneration: 39,
@@ -48,6 +51,7 @@ func TestBucketAttrsToRawBucket(t *testing.T) {
 				ResponseHeaders: []string{"FOO"},
 			},
 		},
+		Encryption: &BucketEncryption{DefaultKMSKeyName: "key"},
 	}
 	got := attrs.toRawBucket()
 	want := &raw.Bucket{
@@ -60,8 +64,11 @@ func TestBucketAttrsToRawBucket(t *testing.T) {
 		},
 		Location:     "loc",
 		StorageClass: "class",
-		Versioning:   nil, // ignore VersioningEnabled if false
-		Labels:       map[string]string{"label": "value"},
+		RetentionPolicy: &raw.BucketRetentionPolicy{
+			RetentionPeriod: 3,
+		},
+		Versioning: nil, // ignore VersioningEnabled if false
+		Labels:     map[string]string{"label": "value"},
 		Cors: []*raw.BucketCors{
 			{
 				MaxAgeSeconds:  3600,
@@ -70,6 +77,7 @@ func TestBucketAttrsToRawBucket(t *testing.T) {
 				ResponseHeader: []string{"FOO"},
 			},
 		},
+		Encryption: &raw.BucketEncryption{DefaultKmsKeyName: "key"},
 	}
 	if msg := testutil.Diff(got, want); msg != "" {
 		t.Error(msg)
@@ -90,6 +98,8 @@ func TestBucketAttrsToUpdateToRawBucket(t *testing.T) {
 	au := &BucketAttrsToUpdate{
 		VersioningEnabled: false,
 		RequesterPays:     false,
+		RetentionPolicy:   &RetentionPolicy{RetentionPeriod: time.Hour},
+		Encryption:        &BucketEncryption{DefaultKMSKeyName: "key2"},
 	}
 	au.SetLabel("a", "foo")
 	au.DeleteLabel("b")
@@ -108,7 +118,9 @@ func TestBucketAttrsToUpdateToRawBucket(t *testing.T) {
 			RequesterPays:   false,
 			ForceSendFields: []string{"RequesterPays"},
 		},
-		NullFields: []string{"Labels.b"},
+		RetentionPolicy: &raw.BucketRetentionPolicy{RetentionPeriod: 3600},
+		Encryption:      &raw.BucketEncryption{DefaultKmsKeyName: "key2"},
+		NullFields:      []string{"Labels.b"},
 	}
 	if msg := testutil.Diff(got, want); msg != "" {
 		t.Error(msg)
@@ -122,7 +134,19 @@ func TestBucketAttrsToUpdateToRawBucket(t *testing.T) {
 		ForceSendFields: []string{"Labels"},
 		NullFields:      []string{"Labels.b"},
 	}
+	if msg := testutil.Diff(got, want); msg != "" {
+		t.Error(msg)
+	}
 
+	// Test nulls.
+	au3 := &BucketAttrsToUpdate{
+		RetentionPolicy: &RetentionPolicy{},
+		Encryption:      &BucketEncryption{},
+	}
+	got = au3.toRawBucket()
+	want = &raw.Bucket{
+		NullFields: []string{"RetentionPolicy", "Encryption"},
+	}
 	if msg := testutil.Diff(got, want); msg != "" {
 		t.Error(msg)
 	}
@@ -247,6 +271,10 @@ func TestNewBucket(t *testing.T) {
 				},
 			}},
 		},
+		RetentionPolicy: &raw.BucketRetentionPolicy{
+			RetentionPeriod: 3,
+			EffectiveTime:   time.Now().Format(time.RFC3339),
+		},
 		Cors: []*raw.BucketCors{
 			{
 				MaxAgeSeconds:  3600,
@@ -258,6 +286,7 @@ func TestNewBucket(t *testing.T) {
 		Acl: []*raw.BucketAccessControl{
 			{Bucket: "name", Role: "READER", Email: "joe@example.com", Entity: "allUsers"},
 		},
+		Encryption: &raw.BucketEncryption{DefaultKmsKeyName: "key"},
 	}
 	want := &BucketAttrs{
 		Name:              "name",
@@ -285,6 +314,9 @@ func TestNewBucket(t *testing.T) {
 				},
 			},
 		},
+		RetentionPolicy: &RetentionPolicy{
+			RetentionPeriod: 3 * time.Second,
+		},
 		CORS: []CORS{
 			{
 				MaxAge:          time.Hour,
@@ -293,11 +325,15 @@ func TestNewBucket(t *testing.T) {
 				ResponseHeaders: []string{"FOO"},
 			},
 		},
+		Encryption:       &BucketEncryption{DefaultKMSKeyName: "key"},
 		ACL:              []ACLRule{{Entity: "allUsers", Role: RoleReader}},
 		DefaultObjectACL: []ACLRule{},
 	}
-	got := newBucket(rb)
-	if diff := testutil.Diff(got, want); diff != "" {
+	got, err := newBucket(rb)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if diff := testutil.Diff(got, want, cmpopts.IgnoreTypes(time.Time{})); diff != "" {
 		t.Errorf("got=-, want=+:\n%s", diff)
 	}
 }

@@ -27,6 +27,7 @@ type Logger struct {
 	// original data for copying
 	name, dsn string
 	dbg       bool
+	nop       bool
 }
 
 // Close the Tracer
@@ -36,6 +37,9 @@ func (log *Logger) Close() {
 
 // WithFields wrapper around zap.With
 func (log *Logger) WithFields(fields ...zapcore.Field) *Logger {
+	if log.nop {
+		return log
+	}
 	l := New(log.name, log.dsn, log.dbg)
 	l.Logger = l.Logger.With(fields...)
 	return l
@@ -47,7 +51,10 @@ func New(name, dsn string, dbg bool) *Logger {
 		return lvl >= zapcore.ErrorLevel
 	})
 	lowPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl < zapcore.ErrorLevel
+		return lvl >= zapcore.InfoLevel && lvl < zapcore.ErrorLevel
+	})
+	debugPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return lvl >= zapcore.DebugLevel && lvl < zapcore.InfoLevel
 	})
 
 	sentry, err := raven.New(dsn)
@@ -65,6 +72,7 @@ func New(name, dsn string, dbg bool) *Logger {
 		core = zapcore.NewTee(
 			zapcore.NewCore(consoleEncoder, consoleErrors, highPriority),
 			zapcore.NewCore(consoleEncoder, consoleDebugging, lowPriority),
+			zapcore.NewCore(consoleEncoder, consoleDebugging, debugPriority),
 		)
 	} else {
 		core = zapcore.NewTee(
@@ -137,6 +145,7 @@ func NewNop() *Logger {
 		Sentry: sentry,
 		closer: closer,
 		Tracer: tracer,
+		nop:    true,
 	}
 
 	return log

@@ -12,8 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package prometheus contains the Prometheus exporters for
-// Stackdriver Monitoring.
+// Package prometheus contains a Prometheus exporter.
 //
 // Please note that this exporter is currently work in progress and not complete.
 package prometheus // import "go.opencensus.io/exporter/prometheus"
@@ -24,6 +23,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sort"
 	"sync"
 
 	"go.opencensus.io/internal"
@@ -32,10 +32,6 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-)
-
-const (
-	defaultNamespace = "opencensus"
 )
 
 // Exporter exports stats to Prometheus, users need
@@ -51,6 +47,7 @@ type Exporter struct {
 // Options contains options for configuring the exporter.
 type Options struct {
 	Namespace string
+	Registry  *prometheus.Registry
 	OnError   func(err error)
 }
 
@@ -71,16 +68,15 @@ func NewExporter(o Options) (*Exporter, error) {
 }
 
 func newExporter(o Options) (*Exporter, error) {
-	if o.Namespace == "" {
-		o.Namespace = defaultNamespace
+	if o.Registry == nil {
+		o.Registry = prometheus.NewRegistry()
 	}
-	reg := prometheus.NewRegistry()
-	collector := newCollector(o, reg)
+	collector := newCollector(o, o.Registry)
 	e := &Exporter{
 		opts:    o,
-		g:       reg,
+		g:       o.Registry,
 		c:       collector,
-		handler: promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
+		handler: promhttp.HandlerFor(o.Registry, promhttp.HandlerOpts{}),
 	}
 	return e, nil
 }
@@ -142,10 +138,8 @@ func (o *Options) onError(err error) {
 // ExportView exports to the Prometheus if view data has one or more rows.
 // Each OpenCensus AggregationData will be converted to
 // corresponding Prometheus Metric: SumData will be converted
-// to Untyped Metric, CountData will be Counter Metric,
-// DistributionData will be Histogram Metric, and MeanData
-// will be Summary Metric. Please note the Summary Metric from
-// MeanData does not have any quantiles.
+// to Untyped Metric, CountData will be a Counter Metric,
+// DistributionData will be a Histogram Metric.
 func (e *Exporter) ExportView(vd *view.Data) {
 	if len(vd.Rows) == 0 {
 		return
@@ -228,26 +222,42 @@ func (c *collector) Collect(ch chan<- prometheus.Metric) {
 }
 
 func (c *collector) toMetric(desc *prometheus.Desc, v *view.View, row *view.Row) (prometheus.Metric, error) {
-	switch agg := v.Aggregation.(type) {
-	case view.CountAggregation:
-		data := row.Data.(*view.CountData)
-		return prometheus.NewConstMetric(desc, prometheus.CounterValue, float64(*data), tagValues(row.Tags)...)
+	switch data := row.Data.(type) {
+	case *view.CountData:
+		return prometheus.NewConstMetric(desc, prometheus.CounterValue, float64(data.Value), tagValues(row.Tags)...)
 
-	case view.DistributionAggregation:
-		data := row.Data.(*view.DistributionData)
+	case *view.DistributionData:
 		points := make(map[float64]uint64)
-		for i, b := range agg {
-			points[b] = uint64(data.CountPerBucket[i])
+		// Histograms are cumulative in Prometheus.
+		// 1. Sort buckets in ascending order but, retain
+		// their indices for reverse lookup later on.
+		// TODO: If there is a guarantee that distribution elements
+		// are always sorted, then skip the sorting.
+		indicesMap := make(map[float64]int)
+		buckets := make([]float64, 0, len(v.Aggregation.Buckets))
+		for i, b := range v.Aggregation.Buckets {
+			if _, ok := indicesMap[b]; !ok {
+				indicesMap[b] = i
+				buckets = append(buckets, b)
+			}
+		}
+		sort.Float64s(buckets)
+
+		// 2. Now that the buckets are sorted by magnitude
+		// we can create cumulative indicesmap them back by reverse index
+		cumCount := uint64(0)
+		for _, b := range buckets {
+			i := indicesMap[b]
+			cumCount += uint64(data.CountPerBucket[i])
+			points[b] = cumCount
 		}
 		return prometheus.NewConstHistogram(desc, uint64(data.Count), data.Sum(), points, tagValues(row.Tags)...)
 
-	case view.MeanAggregation:
-		data := row.Data.(*view.MeanData)
-		return prometheus.NewConstSummary(desc, uint64(data.Count), data.Sum(), make(map[float64]float64), tagValues(row.Tags)...)
+	case *view.SumData:
+		return prometheus.NewConstMetric(desc, prometheus.UntypedValue, data.Value, tagValues(row.Tags)...)
 
-	case view.SumAggregation:
-		data := row.Data.(*view.SumData)
-		return prometheus.NewConstMetric(desc, prometheus.UntypedValue, float64(*data), tagValues(row.Tags)...)
+	case *view.LastValueData:
+		return prometheus.NewConstMetric(desc, prometheus.UntypedValue, data.Value, tagValues(row.Tags)...)
 
 	default:
 		return nil, fmt.Errorf("aggregation %T is not yet supported", v.Aggregation)
@@ -287,7 +297,11 @@ func tagValues(t []tag.Tag) []string {
 }
 
 func viewName(namespace string, v *view.View) string {
-	return namespace + "_" + internal.Sanitize(v.Name)
+	var name string
+	if namespace != "" {
+		name = namespace + "_"
+	}
+	return name + internal.Sanitize(v.Name)
 }
 
 func viewSignature(namespace string, v *view.View) string {

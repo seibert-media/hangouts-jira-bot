@@ -24,8 +24,7 @@ import (
 
 func ExampleClientHandler() {
 	// Subscribe views to collect data.
-	err := view.Subscribe(ocgrpc.DefaultClientViews...)
-	if err != nil {
+	if err := view.Register(ocgrpc.DefaultClientViews...); err != nil {
 		log.Fatal(err)
 	}
 
@@ -40,8 +39,7 @@ func ExampleClientHandler() {
 
 func ExampleServerHandler() {
 	// Subscribe to views to collect data.
-	err := view.Subscribe(ocgrpc.DefaultServerViews...)
-	if err != nil {
+	if err := view.Register(ocgrpc.DefaultServerViews...); err != nil {
 		log.Fatal(err)
 	}
 

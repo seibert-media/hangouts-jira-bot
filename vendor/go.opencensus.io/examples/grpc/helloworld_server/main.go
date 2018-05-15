@@ -18,17 +18,19 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
+	"time"
 
 	"go.opencensus.io/examples/exporter"
 	pb "go.opencensus.io/examples/grpc/proto"
 	"go.opencensus.io/plugin/ocgrpc"
 	"go.opencensus.io/stats/view"
+	"go.opencensus.io/trace"
 	"go.opencensus.io/zpages"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
 )
 
 const port = ":50051"
@@ -38,17 +40,23 @@ type server struct{}
 
 // SayHello implements helloworld.GreeterServer
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
+	ctx, span := trace.StartSpan(ctx, "sleep")
+	time.Sleep(time.Duration(rand.Float64() * float64(time.Second)))
+	span.End()
 	return &pb.HelloReply{Message: "Hello " + in.Name}, nil
 }
 
 func main() {
-	go func() { log.Fatal(http.ListenAndServe(":8081", zpages.Handler)) }()
+	go func() {
+		http.Handle("/debug/", http.StripPrefix("/debug", zpages.Handler))
+		log.Fatal(http.ListenAndServe(":8081", nil))
+	}()
 	// Register stats and trace exporters to export
 	// the collected data.
 	view.RegisterExporter(&exporter.PrintExporter{})
 
-	// Subscribe to collect server request count.
-	if err := ocgrpc.ServerRequestCountView.Subscribe(); err != nil {
+	// Register the views to collect server request count.
+	if err := view.Register(ocgrpc.DefaultServerViews...); err != nil {
 		log.Fatal(err)
 	}
 
@@ -59,10 +67,9 @@ func main() {
 
 	// Set up a new server with the OpenCensus
 	// stats handler to enable stats and tracing.
-	s := grpc.NewServer(grpc.StatsHandler(ocgrpc.NewServerStatsHandler()))
+	s := grpc.NewServer(grpc.StatsHandler(&ocgrpc.ServerHandler{}))
 	pb.RegisterGreeterServer(s, &server{})
-	// Register reflection service on gRPC server.
-	reflection.Register(s)
+
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)
 	}

@@ -762,33 +762,30 @@ func (s *AccountTreeRequest) MarshalJSON() ([]byte, error) {
 }
 
 type AccountTreeRequestAccountSettings struct {
-	AdmobReporting bool `json:"admobReporting,omitempty"`
+	ShareAnonymouslyWithOthers bool `json:"shareAnonymouslyWithOthers,omitempty"`
 
-	SharingWithGoogleAnySales bool `json:"sharingWithGoogleAnySales,omitempty"`
+	ShareWithGoogleProducts bool `json:"shareWithGoogleProducts,omitempty"`
 
-	SharingWithGoogleProducts bool `json:"sharingWithGoogleProducts,omitempty"`
+	ShareWithSpecialists bool `json:"shareWithSpecialists,omitempty"`
 
-	SharingWithGoogleSales bool `json:"sharingWithGoogleSales,omitempty"`
+	ShareWithSupport bool `json:"shareWithSupport,omitempty"`
 
-	SharingWithGoogleSupport bool `json:"sharingWithGoogleSupport,omitempty"`
-
-	SharingWithOthers bool `json:"sharingWithOthers,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "AdmobReporting") to
-	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g.
+	// "ShareAnonymouslyWithOthers") to unconditionally include in API
+	// requests. By default, fields with empty values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "AdmobReporting") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g.
+	// "ShareAnonymouslyWithOthers") to include in API requests with the
+	// JSON null value. By default, fields with empty values are omitted
+	// from API requests. However, any field with an empty value appearing
+	// in NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
 	NullFields []string `json:"-"`
 }
 
@@ -845,33 +842,30 @@ func (s *AccountTreeResponse) MarshalJSON() ([]byte, error) {
 }
 
 type AccountTreeResponseAccountSettings struct {
-	AdmobReporting bool `json:"admobReporting,omitempty"`
+	ShareAnonymouslyWithOthers bool `json:"shareAnonymouslyWithOthers,omitempty"`
 
-	SharingWithGoogleAnySales bool `json:"sharingWithGoogleAnySales,omitempty"`
+	ShareWithGoogleProducts bool `json:"shareWithGoogleProducts,omitempty"`
 
-	SharingWithGoogleProducts bool `json:"sharingWithGoogleProducts,omitempty"`
+	ShareWithSpecialists bool `json:"shareWithSpecialists,omitempty"`
 
-	SharingWithGoogleSales bool `json:"sharingWithGoogleSales,omitempty"`
+	ShareWithSupport bool `json:"shareWithSupport,omitempty"`
 
-	SharingWithGoogleSupport bool `json:"sharingWithGoogleSupport,omitempty"`
-
-	SharingWithOthers bool `json:"sharingWithOthers,omitempty"`
-
-	// ForceSendFields is a list of field names (e.g. "AdmobReporting") to
-	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g.
+	// "ShareAnonymouslyWithOthers") to unconditionally include in API
+	// requests. By default, fields with empty values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "AdmobReporting") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g.
+	// "ShareAnonymouslyWithOthers") to include in API requests with the
+	// JSON null value. By default, fields with empty values are omitted
+	// from API requests. However, any field with an empty value appearing
+	// in NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
 	NullFields []string `json:"-"`
 }
 
@@ -5531,6 +5525,20 @@ type Webproperty struct {
 
 	// Created: Time this web property was created.
 	Created string `json:"created,omitempty"`
+
+	// DataRetentionResetOnNewActivity: Set to true to reset the retention
+	// period of the user identifier with each new event from that user
+	// (thus setting the expiration date to current time plus retention
+	// period).
+	// Set to false to delete data associated with the user identifer
+	// automatically after the rentention period.
+	// This property cannot be set on insert.
+	DataRetentionResetOnNewActivity bool `json:"dataRetentionResetOnNewActivity,omitempty"`
+
+	// DataRetentionTtl: The length of time for which user and event data is
+	// retained.
+	// This property cannot be set on insert.
+	DataRetentionTtl string `json:"dataRetentionTtl,omitempty"`
 
 	// DefaultProfileId: Default view (profile) ID.
 	DefaultProfileId int64 `json:"defaultProfileId,omitempty,string"`
@@ -19274,7 +19282,7 @@ func (c *ProvisioningCreateAccountTreeCall) doRequest(alt string) (*http.Respons
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
-	urls := googleapi.ResolveRelative(c.s.BasePath, "provisioning/createAccount")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "provisioning/createAccountTree")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
@@ -19322,7 +19330,7 @@ func (c *ProvisioningCreateAccountTreeCall) Do(opts ...googleapi.CallOption) (*A
 	//   "description": "Provision account.",
 	//   "httpMethod": "POST",
 	//   "id": "analytics.provisioning.createAccountTree",
-	//   "path": "provisioning/createAccount",
+	//   "path": "provisioning/createAccountTree",
 	//   "request": {
 	//     "$ref": "AccountTreeRequest"
 	//   },

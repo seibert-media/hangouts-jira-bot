@@ -281,7 +281,7 @@
       }
     }
   },
-  "revision": "20180307",
+  "revision": "20180406",
   "rootUrl": "https://testing.googleapis.com/",
   "schemas": {
     "Account": {
@@ -513,6 +513,10 @@
             "type": "string"
           },
           "type": "array"
+        },
+        "videoRecordingNotSupported": {
+          "description": "True if and only if tests with this model DO NOT have video output.\nSee also TestSpecification.disable_video_recording\n@OutputOnly",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -790,7 +794,7 @@
           "type": "integer"
         },
         "month": {
-          "description": "Month of year. Must be from 1 to 12.",
+          "description": "Month of year. Must be from 1 to 12, or 0 if specifying a date without a\nmonth.",
           "format": "int32",
           "type": "integer"
         },
@@ -1150,6 +1154,10 @@
             "type": "string"
           },
           "type": "array"
+        },
+        "videoRecordingDisabled": {
+          "description": "Indicates that video will not be recorded for this execution either because\nthe user chose to disable it or the device does not support it.\nSee AndroidModel.video_recording_not_supported\n@OutputOnly",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -1536,6 +1544,6 @@
     }
   },
   "servicePath": "",
-  "title": "Google Cloud Testing API",
+  "title": "Cloud Testing API",
   "version": "v1"
 }

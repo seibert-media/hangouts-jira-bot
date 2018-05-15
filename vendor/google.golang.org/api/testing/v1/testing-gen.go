@@ -1,4 +1,4 @@
-// Package testing provides access to the Google Cloud Testing API.
+// Package testing provides access to the Cloud Testing API.
 //
 // See https://developers.google.com/cloud-test-lab/
 //
@@ -511,6 +511,12 @@ type AndroidModel struct {
 	// Tags: Tags for this dimension.
 	// Examples: "default", "preview", "deprecated"
 	Tags []string `json:"tags,omitempty"`
+
+	// VideoRecordingNotSupported: True if and only if tests with this model
+	// DO NOT have video output.
+	// See also TestSpecification.disable_video_recording
+	// @OutputOnly
+	VideoRecordingNotSupported bool `json:"videoRecordingNotSupported,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Brand") to
 	// unconditionally include in API requests. By default, fields with
@@ -1045,7 +1051,9 @@ type Date struct {
 	// if specifying a year/month where the day is not significant.
 	Day int64 `json:"day,omitempty"`
 
-	// Month: Month of year. Must be from 1 to 12.
+	// Month: Month of year. Must be from 1 to 12, or 0 if specifying a date
+	// without a
+	// month.
 	Month int64 `json:"month,omitempty"`
 
 	// Year: Year of date. Must be from 1 to 9999, or 0 if specifying a date
@@ -1841,6 +1849,13 @@ type TestDetails struct {
 	// to the end of progress_messages.
 	// @OutputOnly
 	ProgressMessages []string `json:"progressMessages,omitempty"`
+
+	// VideoRecordingDisabled: Indicates that video will not be recorded for
+	// this execution either because
+	// the user chose to disable it or the device does not support it.
+	// See AndroidModel.video_recording_not_supported
+	// @OutputOnly
+	VideoRecordingDisabled bool `json:"videoRecordingDisabled,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "ErrorMessage") to
 	// unconditionally include in API requests. By default, fields with

@@ -77,3 +77,8 @@ func parameterNameToEnvName(name string) string {
 func Parse() {
 	flag.Parse()
 }
+
+// PrintDefaults wraps flag.PrintDefaults
+func PrintDefaults() {
+	flag.CommandLine.PrintDefaults()
+}

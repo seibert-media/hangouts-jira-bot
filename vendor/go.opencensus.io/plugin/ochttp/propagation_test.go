@@ -23,7 +23,7 @@ import (
 	"testing"
 
 	"go.opencensus.io/plugin/ochttp/propagation/b3"
-	"go.opencensus.io/plugin/ochttp/propagation/google"
+	"go.opencensus.io/plugin/ochttp/propagation/tracecontext"
 	"go.opencensus.io/trace"
 	"go.opencensus.io/trace/propagation"
 )
@@ -32,11 +32,11 @@ func TestRoundTripAllFormats(t *testing.T) {
 	// TODO: test combinations of different formats for chains of calls
 	formats := []propagation.HTTPFormat{
 		&b3.HTTPFormat{},
-		&google.HTTPFormat{},
+		&tracecontext.HTTPFormat{},
 	}
 
 	ctx := context.Background()
-	trace.SetDefaultSampler(trace.AlwaysSample())
+	trace.ApplyConfig(trace.Config{DefaultSampler: trace.AlwaysSample()})
 	ctx, span := trace.StartSpan(ctx, "test")
 	sc := span.SpanContext()
 	wantStr := fmt.Sprintf("trace_id=%x, span_id=%x, options=%d", sc.TraceID, sc.SpanID, sc.TraceOptions)

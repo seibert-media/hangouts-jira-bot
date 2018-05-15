@@ -37,14 +37,14 @@ func main() {
 	// the collected data.
 	view.RegisterExporter(&exporter.PrintExporter{})
 
-	// Subscribe to collect client request count.
-	if err := ocgrpc.ClientErrorCountView.Subscribe(); err != nil {
+	// Register the view to collect gRPC client stats.
+	if err := view.Register(ocgrpc.DefaultClientViews...); err != nil {
 		log.Fatal(err)
 	}
 
 	// Set up a connection to the server with the OpenCensus
 	// stats handler to enable stats and tracing.
-	conn, err := grpc.Dial(address, grpc.WithStatsHandler(ocgrpc.NewClientStatsHandler()), grpc.WithInsecure())
+	conn, err := grpc.Dial(address, grpc.WithStatsHandler(&ocgrpc.ClientHandler{}), grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

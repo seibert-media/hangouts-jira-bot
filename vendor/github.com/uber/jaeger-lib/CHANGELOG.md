@@ -1,6 +1,13 @@
 Changes by Version
 ==================
 
+1.5.0 (2018-05-11)
+------------------
+
+- Change default metrics namespace separator from colon to underscore (#43) <Juraci Paixão Kröhling>
+- Use an interface to be compatible with Prometheus 0.9.x (#42) <Pavel Nikolov>
+
+
 1.4.0 (2018-03-05)
 ------------------
 

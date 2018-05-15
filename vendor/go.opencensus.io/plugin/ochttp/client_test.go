@@ -36,8 +36,8 @@ func TestClient(t *testing.T) {
 	}))
 	defer server.Close()
 
-	for _, v := range ochttp.DefaultViews {
-		v.Subscribe()
+	if err := view.Register(ochttp.DefaultClientViews...); err != nil {
+		t.Fatalf("Failed to register ochttp.DefaultClientViews error: %v", err)
 	}
 
 	views := []string{
@@ -54,15 +54,14 @@ func TestClient(t *testing.T) {
 		}
 	}
 
-	var (
-		w    sync.WaitGroup
-		tr   ochttp.Transport
-		errs = make(chan error, reqCount)
-	)
-	w.Add(reqCount)
+	var wg sync.WaitGroup
+	var tr ochttp.Transport
+	errs := make(chan error, reqCount)
+	wg.Add(reqCount)
+
 	for i := 0; i < reqCount; i++ {
 		go func() {
-			defer w.Done()
+			defer wg.Done()
 			req, err := http.NewRequest("POST", server.URL, strings.NewReader("req-body"))
 			if err != nil {
 				errs <- fmt.Errorf("error creating request: %v", err)
@@ -81,7 +80,7 @@ func TestClient(t *testing.T) {
 	}
 
 	go func() {
-		w.Wait()
+		wg.Wait()
 		close(errs)
 	}()
 
@@ -110,11 +109,12 @@ func TestClient(t *testing.T) {
 		var count int64
 		switch data := data.(type) {
 		case *view.CountData:
-			count = *(*int64)(data)
+			count = data.Value
 		case *view.DistributionData:
 			count = data.Count
 		default:
-			t.Errorf("don't know how to handle data type: %v", data)
+			t.Errorf("Unkown data type: %v", data)
+			continue
 		}
 		if got := count; got != reqCount {
 			t.Fatalf("%s = %d; want %d", viewName, got, reqCount)
@@ -122,19 +122,13 @@ func TestClient(t *testing.T) {
 	}
 }
 
-func BenchmarkTransportNoInstrumentation(b *testing.B) {
-	benchmarkClientServer(b, &ochttp.Transport{NoStats: true, NoTrace: true})
+var noTrace = trace.StartOptions{Sampler: trace.NeverSample()}
+
+func BenchmarkTransportNoTrace(b *testing.B) {
+	benchmarkClientServer(b, &ochttp.Transport{StartOptions: noTrace})
 }
 
-func BenchmarkTransportTraceOnly(b *testing.B) {
-	benchmarkClientServer(b, &ochttp.Transport{NoStats: true})
-}
-
-func BenchmarkTransportStatsOnly(b *testing.B) {
-	benchmarkClientServer(b, &ochttp.Transport{NoTrace: true})
-}
-
-func BenchmarkTransportAllInstrumentation(b *testing.B) {
+func BenchmarkTransport(b *testing.B) {
 	benchmarkClientServer(b, &ochttp.Transport{})
 }
 
@@ -144,7 +138,7 @@ func benchmarkClientServer(b *testing.B, transport *ochttp.Transport) {
 		fmt.Fprintf(rw, "Hello world.\n")
 	}))
 	defer ts.Close()
-	transport.Sampler = trace.AlwaysSample()
+	transport.StartOptions.Sampler = trace.AlwaysSample()
 	var client http.Client
 	client.Transport = transport
 	b.ResetTimer()
@@ -166,19 +160,11 @@ func benchmarkClientServer(b *testing.B, transport *ochttp.Transport) {
 	}
 }
 
-func BenchmarkTransportParallel64NoInstrumentation(b *testing.B) {
-	benchmarkClientServerParallel(b, 64, &ochttp.Transport{NoTrace: true, NoStats: true})
+func BenchmarkTransportParallel64NoTrace(b *testing.B) {
+	benchmarkClientServerParallel(b, 64, &ochttp.Transport{StartOptions: noTrace})
 }
 
-func BenchmarkTransportParallel64TraceOnly(b *testing.B) {
-	benchmarkClientServerParallel(b, 64, &ochttp.Transport{NoStats: true})
-}
-
-func BenchmarkTransportParallel64StatsOnly(b *testing.B) {
-	benchmarkClientServerParallel(b, 64, &ochttp.Transport{NoTrace: true})
-}
-
-func BenchmarkTransportParallel64AllInstrumentation(b *testing.B) {
+func BenchmarkTransportParallel64(b *testing.B) {
 	benchmarkClientServerParallel(b, 64, &ochttp.Transport{})
 }
 
@@ -194,7 +180,7 @@ func benchmarkClientServerParallel(b *testing.B, parallelism int, transport *och
 		MaxIdleConns:        parallelism,
 		MaxIdleConnsPerHost: parallelism,
 	}
-	transport.Sampler = trace.AlwaysSample()
+	transport.StartOptions.Sampler = trace.AlwaysSample()
 	c.Transport = transport
 
 	b.ResetTimer()

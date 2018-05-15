@@ -356,12 +356,13 @@ var commands = []struct {
 		Desc: "Read rows",
 		do:   doRead,
 		Usage: "cbt read <table> [start=<row>] [end=<row>] [prefix=<prefix>]" +
-			" [regex=<regex>] [count=<n>] [app-profile=<app profile id>]\n" +
+			" [regex=<regex>] [count=<n>] [cells-per-column=<n>] [app-profile=<app profile id>]\n" +
 			"  start=<row>		Start reading at this row\n" +
 			"  end=<row>		Stop reading before this row\n" +
 			"  prefix=<prefix>	Read rows with this prefix\n" +
 			"  regex=<regex> 	Read rows with keys matching this regex\n" +
 			"  count=<n>		Read only this many rows\n" +
+			"  cells-per-column=<n>	Read only this many cells per column\n" +
 			"  app-profile=<app profile id>		The app profile id to use for the request (replication alpha)\n",
 		Required: cbtconfig.ProjectAndInstanceRequired,
 	},
@@ -995,7 +996,7 @@ func doRead(ctx context.Context, args ...string) {
 		case "limit":
 			// Be nicer; we used to support this, but renamed it to "end".
 			log.Fatalf("Unknown arg key %q; did you mean %q?", key, "end")
-		case "start", "end", "prefix", "count", "regex", "app-profile":
+		case "start", "end", "prefix", "count", "cells-per-column", "regex", "app-profile":
 			parsed[key] = val
 		}
 	}
@@ -1020,6 +1021,13 @@ func doRead(ctx context.Context, args ...string) {
 			log.Fatalf("Bad count %q: %v", count, err)
 		}
 		opts = append(opts, bigtable.LimitRows(n))
+	}
+	if cellsPerColumn := parsed["cells-per-column"]; cellsPerColumn != "" {
+		n, err := strconv.Atoi(cellsPerColumn)
+		if err != nil {
+			log.Fatalf("Bad number of cells per column %q: %v", cellsPerColumn, err)
+		}
+		opts = append(opts, bigtable.RowFilter(bigtable.LatestNFilter(n)))
 	}
 	if regex := parsed["regex"]; regex != "" {
 		opts = append(opts, bigtable.RowFilter(bigtable.RowKeyFilter(regex)))
@@ -1074,12 +1082,12 @@ func doSet(ctx context.Context, args ...string) {
 
 func doSetGCPolicy(ctx context.Context, args ...string) {
 	if len(args) < 3 {
-		log.Fatalf("usage: cbt setgcpolicy <table> <family> ( maxage=<d> | maxversions=<n> )")
+		log.Fatalf("usage: cbt setgcpolicy <table> <family> ( maxage=<d> | maxversions=<n> | maxage=<d> (and|or) maxversions=<n> )")
 	}
 	table := args[0]
 	fam := args[1]
 
-	pol, err := parseGCPolicy(args[2])
+	pol, err := parseGCPolicy(strings.Join(args[2:], " "))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -1101,24 +1109,55 @@ func doWaitForReplicaiton(ctx context.Context, args ...string) {
 }
 
 func parseGCPolicy(policyStr string) (bigtable.GCPolicy, error) {
-	var pol bigtable.GCPolicy
-	switch p := policyStr; {
-	case strings.HasPrefix(p, "maxage="):
-		d, err := parseDuration(p[7:])
+	words := strings.Fields(policyStr)
+	switch len(words) {
+	case 1:
+		return parseSinglePolicy(words[0])
+	case 3:
+		p1, err := parseSinglePolicy(words[0])
 		if err != nil {
 			return nil, err
 		}
-		pol = bigtable.MaxAgePolicy(d)
-	case strings.HasPrefix(p, "maxversions="):
-		n, err := strconv.ParseUint(p[12:], 10, 16)
+		p2, err := parseSinglePolicy(words[2])
 		if err != nil {
 			return nil, err
 		}
-		pol = bigtable.MaxVersionsPolicy(int(n))
+		switch words[1] {
+		case "and":
+			return bigtable.IntersectionPolicy(p1, p2), nil
+		case "or":
+			return bigtable.UnionPolicy(p1, p2), nil
+		default:
+			return nil, fmt.Errorf("Expected 'and' or 'or', saw %q", words[1])
+		}
 	default:
-		return nil, fmt.Errorf("Bad GC policy %q", p)
+		return nil, fmt.Errorf("Expected '1' or '3' parameter count, saw %d", len(words))
 	}
-	return pol, nil
+	return nil, nil
+}
+
+func parseSinglePolicy(s string) (bigtable.GCPolicy, error) {
+	words := strings.Split(s, "=")
+	if len(words) != 2 {
+		return nil, fmt.Errorf("Expected 'name=value', got %q", words)
+	}
+	switch words[0] {
+	case "maxage":
+		d, err := parseDuration(words[1])
+		if err != nil {
+			return nil, err
+		}
+		return bigtable.MaxAgePolicy(d), nil
+	case "maxversions":
+		n, err := strconv.ParseUint(words[1], 10, 16)
+		if err != nil {
+			return nil, err
+		}
+		return bigtable.MaxVersionsPolicy(int(n)), nil
+	default:
+		return nil, fmt.Errorf("Expected 'maxage' or 'maxversions', got %q", words[1])
+	}
+	return nil, nil
 }
 
 func parseStorageType(storageTypeStr string) (bigtable.StorageType, error) {

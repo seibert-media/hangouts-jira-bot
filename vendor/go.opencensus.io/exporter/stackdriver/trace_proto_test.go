@@ -57,19 +57,21 @@ func (t *testExporter) ExportSpan(s *trace.SpanData) {
 }
 
 func TestExportTrace(t *testing.T) {
+	ctx := context.Background()
+
 	var te testExporter
 	trace.RegisterExporter(&te)
 	defer trace.UnregisterExporter(&te)
 
-	span0 := trace.NewSpanWithRemoteParent(
+	ctx, span0 := trace.StartSpanWithRemoteParent(
+		ctx,
 		"span0",
 		trace.SpanContext{
 			TraceID:      traceID,
 			SpanID:       spanID,
 			TraceOptions: 1,
 		},
-		trace.StartOptions{})
-	ctx := trace.WithSpan(context.Background(), span0)
+	)
 	{
 		ctx1, span1 := trace.StartSpan(ctx, "span1")
 		{
@@ -77,10 +79,10 @@ func TestExportTrace(t *testing.T) {
 			span2.AddMessageSendEvent(0x123, 1024, 512)
 			span2.Annotatef(nil, "in span%d", 2)
 			span2.Annotate(nil, big.NewRat(2, 4).String())
-			span2.SetAttributes(
-				trace.StringAttribute{Key: "key1", Value: "value1"},
-				trace.StringAttribute{Key: "key2", Value: "value2"})
-			span2.SetAttributes(trace.Int64Attribute{Key: "key1", Value: 100})
+			span2.AddAttributes(
+				trace.StringAttribute("key1", "value1"),
+				trace.StringAttribute("key2", "value2"))
+			span2.AddAttributes(trace.Int64Attribute("key1", 100))
 			span2.End()
 		}
 		{
@@ -92,9 +94,9 @@ func TestExportTrace(t *testing.T) {
 			{
 				_, span4 := trace.StartSpan(ctx3, "span4")
 				x := 42
-				a1 := []trace.Attribute{trace.StringAttribute{Key: "k1", Value: "v1"}}
-				a2 := []trace.Attribute{trace.StringAttribute{Key: "k2", Value: "v2"}}
-				a3 := []trace.Attribute{trace.StringAttribute{Key: "k3", Value: "v3"}}
+				a1 := []trace.Attribute{trace.StringAttribute("k1", "v1")}
+				a2 := []trace.Attribute{trace.StringAttribute("k2", "v2")}
+				a3 := []trace.Attribute{trace.StringAttribute("k3", "v3")}
 				a4 := map[string]interface{}{"k4": "v4"}
 				r := big.NewRat(2, 4)
 				span4.Annotate(a1, r.String())
@@ -289,7 +291,7 @@ func TestExportTrace(t *testing.T) {
 			Links: &tracepb.Span_Links{
 				Link: []*tracepb.Span_Link{
 					{
-						TraceId: "projects/testproject/traces/01020000000000000000000000000000",
+						TraceId: "01020000000000000000000000000000",
 						SpanId:  "0300000000000000",
 						Type:    tracepb.Span_Link_PARENT_LINKED_SPAN,
 						Attributes: &tracepb.Span_Attributes{
