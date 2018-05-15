@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/seibert-media/hangouts-jira-bot/pkg/hangouts"
-
 	"cloud.google.com/go/pubsub"
 	goJira "github.com/andygrunwald/go-jira"
+	"github.com/pkg/errors"
 	"github.com/playnet-public/libs/log"
+	"github.com/seibert-media/go-hangouts"
 	"go.uber.org/zap"
 )
 
@@ -56,6 +56,7 @@ func (j *JIRA) Callback(ctx context.Context, m *pubsub.Message) {
 	err := json.Unmarshal(m.Data, &msg)
 	if err != nil {
 		j.Error("event parse error", zap.Error(err))
+		j.hangouts.Send(msg.Space.Name, j.BuildError(errors.Wrap(err, "event parse error"), msg.Message.Thread.Name))
 		return
 	}
 	j.Debug(
@@ -70,119 +71,56 @@ func (j *JIRA) Callback(ctx context.Context, m *pubsub.Message) {
 	issues := regex.FindAllString(msg.Message.Text, -1)
 	for _, issue := range issues {
 		j.Debug("handling issue", zap.String("id", issue))
-		card, err := j.BuildCard(issue, msg)
+		m, err := j.BuildMessage(issue, msg)
 		if err != nil {
 			j.Warn("build card failed", zap.Error(err))
+			j.hangouts.Send(msg.Space.Name, j.BuildError(errors.Wrap(err, "build card failed"), msg.Message.Thread.Name))
 			return
 		}
-		err = j.hangouts.SendCard(msg.Space.Name, card)
+		err = j.hangouts.Send(msg.Space.Name, m)
 		if err != nil {
 			j.Error("send card error", zap.Error(err))
+			j.hangouts.Send(msg.Space.Name, j.BuildError(errors.Wrap(err, "send card error"), msg.Message.Thread.Name))
 		}
 	}
 }
 
-// BuildCard for issue
-func (j *JIRA) BuildCard(issue string, msg hangouts.Event) (string, error) {
+// BuildMessage for issue
+func (j *JIRA) BuildMessage(issue string, msg hangouts.Event) (*hangouts.Message, error) {
 	i, _, err := j.Client.Issue.Get(issue, nil)
 	if err != nil {
 		j.Debug("jira issue fetch error", zap.String("issue", issue), zap.Error(err))
-		return "", err
+		return nil, err
 	}
-	/*
-		card := hangouts.Card{
-		Header: hangouts.Header{
-			Title:      issue,
-			Subtitle:   i.Fields.Summary,
-			ImageURL:   "https://cdn6.aptoide.com/imgs/9/9/b/99b698eae5433cc15b23862f4a305a37_icon.png?w=240",
-			ImageStyle: "AVATAR",
-		},
-		Sections: []hangouts.Section{
-			{
-				Widgets: []hangouts.Widget{
-					{
-						KeyValue: hangouts.KeyValue{
-							TopLabel: "Status",
-							Content:  i.Fields.Status.Name,
-						},
-					},
-					{
-						TextParagraph: hangouts.TextParagraph{
-							Text: i.Fields.Description,
-						},
-					},
-				},
-			},
-			{
-				Widgets: []hangouts.Widget{
-					hangouts.ActionWidget{
-						Buttons: []hangouts.Button{
-							hangouts.Button{
-								TextButton: hangouts.TextButton{
-									Text: "Open Ticket",
-									OnClick: hangouts.OnClick{
-										OpenLink: hangouts.OpenLink{
-											URL: i.Self,
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-		Actions: []hangouts.Action{
-			{
-				Label: "Open Ticket",
-				OnClick: hangouts.OnClick{
-					OpenLink: hangouts.OpenLink{
-						URL: i.Self,
-					},
-				},
-			},
-		},
-		}
-	*/
-	card := fmt.Sprintf(`{ 
-		"thread": {"name": "%s"},
-		"cards": [
-		{
-		"header": {
-			"title": "%s",
-			"subtitle": "%s",
-			"imageUrl": "https://storage.googleapis.com/bot-icons/jira-app-icon.png",
-			"imageStyle": "AVATAR"
-		},
-		"sections": [{
-				"widgets": [{
-						"keyValue": {
-							"topLabel": "Status",
-							"content": "%s"
-						}
-					},
-					{
-						"textParagraph": {
-							"text": "%s"
-						}
-					}
-				]
-			},
-			{
-				"widgets": [{
-					"buttons": [{
-						"textButton": {
-							"text": "Open Ticket",
-							"onClick": {
-								"openLink": {
-									"url": "%s/browse/%s"
-								}
-							}
-						}
-					}]
-				}]
-			}
-		]
-	}]}`, msg.Message.Thread.Name, issue, i.Fields.Summary, i.Fields.Status.Name, i.Fields.Description, j.baseURL, issue)
-	return card, nil
+
+	m := hangouts.NewMessage().InThread(msg.Message.Thread.Name).
+		WithCard(
+			hangouts.NewCard().
+				WithHeader(
+					issue,
+					i.Fields.Summary,
+					"https://storage.googleapis.com/bot-icons/jira-app-icon.png",
+					"AVATAR",
+				).WithSection(
+				hangouts.NewSection("").WithWidget(hangouts.NewWidget().
+					WithKeyValue(hangouts.NewKeyValue("Status", i.Fields.Status.Name, false)).
+					WithKeyValue(hangouts.NewKeyValue("Assignee", i.Fields.Assignee.Name, false)),
+				),
+			).WithSection(
+				hangouts.NewSection("").WithWidget(
+					hangouts.NewWidget().WithButton(
+						hangouts.NewTextLinkButton(
+							"Open Ticket",
+							fmt.Sprintf("%s/browse/%s", j.baseURL, issue),
+						),
+					),
+				),
+			),
+		)
+	return m, nil
+}
+
+// BuildError message
+func (j *JIRA) BuildError(e error, thread string) *hangouts.Message {
+	return hangouts.NewMessage().InThread(thread).WithText(fmt.Sprintf("Error: %s", e.Error()))
 }

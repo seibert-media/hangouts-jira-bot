@@ -5,16 +5,15 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/seibert-media/hangouts-jira-bot/pkg/hangouts"
-
 	flag "github.com/bborbe/flagenv"
-
 	"github.com/kolide/kit/version"
 	"github.com/playnet-public/libs/log"
-	"github.com/seibert-media/hangouts-jira-bot/pkg/jira"
-	"github.com/seibert-media/hangouts-jira-bot/pkg/pubsub"
+	"github.com/seibert-media/go-hangouts"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"github.com/seibert-media/hangouts-jira-bot/pkg/jira"
+	"github.com/seibert-media/hangouts-jira-bot/pkg/pubsub"
 )
 
 const (
