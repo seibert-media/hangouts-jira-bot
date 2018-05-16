@@ -19,7 +19,9 @@ func (m *Message) WithSender(u User) *Message {
 
 // InThread defines the thread a message should be posted in
 func (m *Message) InThread(name string) *Message {
-	m.Thread.Name = name
+	m.Thread = &Thread{
+		Name: name,
+	}
 	return m
 }
 

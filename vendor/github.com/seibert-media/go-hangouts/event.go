@@ -10,14 +10,17 @@ type User struct {
 
 // Message struct
 type Message struct {
-	Name       string `json:"name,omitempty"`
-	Sender     User   `json:"sender,omitempty"`
-	CreateTime string `json:"createTime,omitempty"`
-	Text       string `json:"text,omitempty"`
-	Thread     struct {
-		Name string `json:"name,omitempty"`
-	} `json:"thread,omitempty"`
-	Cards []*Card `json:"cards,omitempty"`
+	Name       string  `json:"name,omitempty"`
+	Sender     User    `json:"sender,omitempty"`
+	CreateTime string  `json:"createTime,omitempty"`
+	Text       string  `json:"text,omitempty"`
+	Thread     *Thread `json:"thread,omitempty"`
+	Cards      []*Card `json:"cards,omitempty"`
+}
+
+// Thread struct
+type Thread struct {
+	Name string `json:"name,omitempty"`
 }
 
 // Event struct
