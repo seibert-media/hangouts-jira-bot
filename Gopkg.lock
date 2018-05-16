@@ -115,7 +115,7 @@
   branch = "master"
   name = "github.com/seibert-media/go-hangouts"
   packages = ["."]
-  revision = "1f033f0db6bae7b1afdd5e353d1acdc7078434b3"
+  revision = "83fa9d7311542f484b50b122ffca179a81040cbf"
 
 [[projects]]
   name = "github.com/trivago/tgo"

@@ -61,7 +61,7 @@ func (h *Hangouts) Send(space string, msg *Message) error {
 	if resp.StatusCode/100 != 2 {
 		body, _ := ioutil.ReadAll(resp.Body)
 		h.Error("post message error", zap.String("status", resp.Status), zap.ByteString("body", body))
-		return err
+		return fmt.Errorf("post message error: %s", body)
 	}
 	return nil
 }
