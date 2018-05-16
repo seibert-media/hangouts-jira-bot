@@ -88,4 +88,4 @@ build-docker-bin:
 update-deployment: docker upload clean restart-deployment
 
 restart-deployment:
-	kubectl delete po -n bot -lapp=$(NAME)
+	kubectl delete po -n $(NAME) -lapp=$(NAME)

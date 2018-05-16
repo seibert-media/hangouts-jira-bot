@@ -92,27 +92,28 @@ func (j *JIRA) BuildMessage(issue string, msg hangouts.Event) (*hangouts.Message
 		j.Debug("jira issue fetch error", zap.String("issue", issue), zap.Error(err))
 		return nil, err
 	}
-
+	assignee := "Unassigned"
+	if i.Fields.Assignee != nil {
+		assignee = i.Fields.Assignee.Name
+	}
 	m := hangouts.NewMessage().InThread(msg.Message.Thread.Name).
 		WithCard(
-			hangouts.NewCard().
-				WithHeader(
-					issue,
-					i.Fields.Summary,
-					"https://storage.googleapis.com/bot-icons/jira-app-icon.png",
-					"AVATAR",
-				).WithSection(
+			hangouts.NewCard().WithHeader(
+				fmt.Sprintf("%s: %s", issue, i.Fields.Summary),
+				"",
+				"https://storage.googleapis.com/bot-icons/jira-app-icon.png",
+				"AVATAR",
+			).WithSection(
 				hangouts.NewSection("").WithWidget(hangouts.NewWidget().
-					WithKeyValue(hangouts.NewKeyValue("Status", i.Fields.Status.Name, false)).
-					WithKeyValue(hangouts.NewKeyValue("Assignee", i.Fields.Assignee.Name, false)),
+					WithKeyValue(hangouts.NewKeyValue("Status", i.Fields.Status.Name, false)),
+				).WithWidget(hangouts.NewWidget().
+					WithKeyValue(hangouts.NewKeyValue("Assignee", assignee, false)),
 				),
 			).WithSection(
-				hangouts.NewSection("").WithWidget(
-					hangouts.NewWidget().WithButton(
-						hangouts.NewTextLinkButton(
-							"Open Ticket",
-							fmt.Sprintf("%s/browse/%s", j.baseURL, issue),
-						),
+				hangouts.NewSection("").WithWidget(hangouts.NewWidget().
+					WithButton(hangouts.NewTextLinkButton(
+						"Open Ticket",
+						fmt.Sprintf("%s/browse/%s", j.baseURL, issue)),
 					),
 				),
 			),
