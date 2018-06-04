@@ -47,14 +47,15 @@ func NewWebhookClient(log *log.Logger, url string) (*Hangouts, error) {
 // Send Message to Hangouts
 // space can be left empty if using webhooks as it is used to identify the channel messages are being sent to
 func (h *Hangouts) Send(space string, msg *Message) error {
-	if h.URL == "" {
-		h.URL = fmt.Sprintf("https://chat.googleapis.com/v1/%s/messages", space)
+	url := h.URL
+	if url == "" {
+		url = fmt.Sprintf("https://chat.googleapis.com/v1/%s/messages", space)
 	}
 	data, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
-	resp, err := h.Client.Post(h.URL, "application/json", bytes.NewBuffer(data))
+	resp, err := h.Client.Post(url, "application/json", bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}

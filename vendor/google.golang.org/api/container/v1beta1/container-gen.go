@@ -333,6 +333,36 @@ func (s *AutoUpgradeOptions) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// BinaryAuthorization: Configuration for Binary Authorization.
+type BinaryAuthorization struct {
+	// Enabled: Enable Binary Authorization for this cluster. If enabled,
+	// all container
+	// images will be validated by Google Binauthz.
+	Enabled bool `json:"enabled,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Enabled") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Enabled") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BinaryAuthorization) MarshalJSON() ([]byte, error) {
+	type NoMethod BinaryAuthorization
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // CancelOperationRequest: CancelOperationRequest cancels a single
 // operation.
 type CancelOperationRequest struct {
@@ -451,6 +481,9 @@ type Cluster struct {
 	// AddonsConfig: Configurations for the various addons available to run
 	// in the cluster.
 	AddonsConfig *AddonsConfig `json:"addonsConfig,omitempty"`
+
+	// BinaryAuthorization: Configuration for Binary Authorization.
+	BinaryAuthorization *BinaryAuthorization `json:"binaryAuthorization,omitempty"`
 
 	// ClusterIpv4Cidr: The IP address range of the container pods in this
 	// cluster,
@@ -781,6 +814,10 @@ type ClusterUpdate struct {
 	// DesiredAddonsConfig: Configurations for the various addons available
 	// to run in the cluster.
 	DesiredAddonsConfig *AddonsConfig `json:"desiredAddonsConfig,omitempty"`
+
+	// DesiredBinaryAuthorization: The desired configuration options for the
+	// Binary Authorization feature.
+	DesiredBinaryAuthorization *BinaryAuthorization `json:"desiredBinaryAuthorization,omitempty"`
 
 	// DesiredImageType: The desired image type for the node pool.
 	// NOTE: Set the "desired_node_pool" field as well.
@@ -1941,6 +1978,12 @@ type NodeConfig struct {
 	//
 	// If unspecified, the default disk size is 100GB.
 	DiskSizeGb int64 `json:"diskSizeGb,omitempty"`
+
+	// DiskType: Type of the disk attached to each node (e.g. 'pd-standard'
+	// or 'pd-ssd')
+	//
+	// If unspecified, the default disk type is 'pd-standard'
+	DiskType string `json:"diskType,omitempty"`
 
 	// ImageType: The image type to use for this node. Note that for a given
 	// image type,
@@ -4621,7 +4664,7 @@ type ProjectsLocationsClustersGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the details of a specific cluster.
+// Get: Gets the details for a specific cluster.
 func (r *ProjectsLocationsClustersService) Get(name string) *ProjectsLocationsClustersGetCall {
 	c := &ProjectsLocationsClustersGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -4752,7 +4795,7 @@ func (c *ProjectsLocationsClustersGetCall) Do(opts ...googleapi.CallOption) (*Cl
 	}
 	return ret, nil
 	// {
-	//   "description": "Gets the details of a specific cluster.",
+	//   "description": "Gets the details for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}",
 	//   "httpMethod": "GET",
 	//   "id": "container.projects.locations.clusters.get",
@@ -4977,7 +5020,7 @@ type ProjectsLocationsClustersSetAddonsCall struct {
 	header_                http.Header
 }
 
-// SetAddons: Sets the addons of a specific cluster.
+// SetAddons: Sets the addons for a specific cluster.
 func (r *ProjectsLocationsClustersService) SetAddons(name string, setaddonsconfigrequest *SetAddonsConfigRequest) *ProjectsLocationsClustersSetAddonsCall {
 	c := &ProjectsLocationsClustersSetAddonsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -5071,7 +5114,7 @@ func (c *ProjectsLocationsClustersSetAddonsCall) Do(opts ...googleapi.CallOption
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the addons of a specific cluster.",
+	//   "description": "Sets the addons for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:setAddons",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.locations.clusters.setAddons",
@@ -5248,7 +5291,7 @@ type ProjectsLocationsClustersSetLocationsCall struct {
 	header_             http.Header
 }
 
-// SetLocations: Sets the locations of a specific cluster.
+// SetLocations: Sets the locations for a specific cluster.
 func (r *ProjectsLocationsClustersService) SetLocations(name string, setlocationsrequest *SetLocationsRequest) *ProjectsLocationsClustersSetLocationsCall {
 	c := &ProjectsLocationsClustersSetLocationsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -5342,7 +5385,7 @@ func (c *ProjectsLocationsClustersSetLocationsCall) Do(opts ...googleapi.CallOpt
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the locations of a specific cluster.",
+	//   "description": "Sets the locations for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:setLocations",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.locations.clusters.setLocations",
@@ -5383,7 +5426,7 @@ type ProjectsLocationsClustersSetLoggingCall struct {
 	header_                  http.Header
 }
 
-// SetLogging: Sets the logging service of a specific cluster.
+// SetLogging: Sets the logging service for a specific cluster.
 func (r *ProjectsLocationsClustersService) SetLogging(name string, setloggingservicerequest *SetLoggingServiceRequest) *ProjectsLocationsClustersSetLoggingCall {
 	c := &ProjectsLocationsClustersSetLoggingCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -5477,7 +5520,7 @@ func (c *ProjectsLocationsClustersSetLoggingCall) Do(opts ...googleapi.CallOptio
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the logging service of a specific cluster.",
+	//   "description": "Sets the logging service for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:setLogging",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.locations.clusters.setLogging",
@@ -5655,7 +5698,7 @@ type ProjectsLocationsClustersSetMasterAuthCall struct {
 
 // SetMasterAuth: Used to set master auth materials. Currently supports
 // :-
-// Changing the admin password of a specific cluster.
+// Changing the admin password for a specific cluster.
 // This can be either via password generation or explicitly set.
 // Modify basic_auth.csv and reset the K8S API server.
 func (r *ProjectsLocationsClustersService) SetMasterAuth(name string, setmasterauthrequest *SetMasterAuthRequest) *ProjectsLocationsClustersSetMasterAuthCall {
@@ -5751,7 +5794,7 @@ func (c *ProjectsLocationsClustersSetMasterAuthCall) Do(opts ...googleapi.CallOp
 	}
 	return ret, nil
 	// {
-	//   "description": "Used to set master auth materials. Currently supports :-\nChanging the admin password of a specific cluster.\nThis can be either via password generation or explicitly set.\nModify basic_auth.csv and reset the K8S API server.",
+	//   "description": "Used to set master auth materials. Currently supports :-\nChanging the admin password for a specific cluster.\nThis can be either via password generation or explicitly set.\nModify basic_auth.csv and reset the K8S API server.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:setMasterAuth",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.locations.clusters.setMasterAuth",
@@ -5792,7 +5835,7 @@ type ProjectsLocationsClustersSetMonitoringCall struct {
 	header_                     http.Header
 }
 
-// SetMonitoring: Sets the monitoring service of a specific cluster.
+// SetMonitoring: Sets the monitoring service for a specific cluster.
 func (r *ProjectsLocationsClustersService) SetMonitoring(name string, setmonitoringservicerequest *SetMonitoringServiceRequest) *ProjectsLocationsClustersSetMonitoringCall {
 	c := &ProjectsLocationsClustersSetMonitoringCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -5886,7 +5929,7 @@ func (c *ProjectsLocationsClustersSetMonitoringCall) Do(opts ...googleapi.CallOp
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the monitoring service of a specific cluster.",
+	//   "description": "Sets the monitoring service for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:setMonitoring",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.locations.clusters.setMonitoring",
@@ -6332,7 +6375,7 @@ type ProjectsLocationsClustersUpdateCall struct {
 	header_              http.Header
 }
 
-// Update: Updates the settings of a specific cluster.
+// Update: Updates the settings for a specific cluster.
 func (r *ProjectsLocationsClustersService) Update(name string, updateclusterrequest *UpdateClusterRequest) *ProjectsLocationsClustersUpdateCall {
 	c := &ProjectsLocationsClustersUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -6426,7 +6469,7 @@ func (c *ProjectsLocationsClustersUpdateCall) Do(opts ...googleapi.CallOption) (
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates the settings of a specific cluster.",
+	//   "description": "Updates the settings for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}",
 	//   "httpMethod": "PUT",
 	//   "id": "container.projects.locations.clusters.update",
@@ -6467,7 +6510,7 @@ type ProjectsLocationsClustersUpdateMasterCall struct {
 	header_             http.Header
 }
 
-// UpdateMaster: Updates the master of a specific cluster.
+// UpdateMaster: Updates the master for a specific cluster.
 func (r *ProjectsLocationsClustersService) UpdateMaster(name string, updatemasterrequest *UpdateMasterRequest) *ProjectsLocationsClustersUpdateMasterCall {
 	c := &ProjectsLocationsClustersUpdateMasterCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -6561,7 +6604,7 @@ func (c *ProjectsLocationsClustersUpdateMasterCall) Do(opts ...googleapi.CallOpt
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates the master of a specific cluster.",
+	//   "description": "Updates the master for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}:updateMaster",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.locations.clusters.updateMaster",
@@ -7709,7 +7752,7 @@ type ProjectsLocationsClustersNodePoolsSetSizeCall struct {
 	header_                http.Header
 }
 
-// SetSize: Sets the size of a specific node pool.
+// SetSize: Sets the size for a specific node pool.
 func (r *ProjectsLocationsClustersNodePoolsService) SetSize(name string, setnodepoolsizerequest *SetNodePoolSizeRequest) *ProjectsLocationsClustersNodePoolsSetSizeCall {
 	c := &ProjectsLocationsClustersNodePoolsSetSizeCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -7803,7 +7846,7 @@ func (c *ProjectsLocationsClustersNodePoolsSetSizeCall) Do(opts ...googleapi.Cal
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the size of a specific node pool.",
+	//   "description": "Sets the size for a specific node pool.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/locations/{locationsId}/clusters/{clustersId}/nodePools/{nodePoolsId}:setSize",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.locations.clusters.nodePools.setSize",
@@ -8635,7 +8678,7 @@ type ProjectsZonesClustersAddonsCall struct {
 	header_                http.Header
 }
 
-// Addons: Sets the addons of a specific cluster.
+// Addons: Sets the addons for a specific cluster.
 func (r *ProjectsZonesClustersService) Addons(projectId string, zone string, clusterId string, setaddonsconfigrequest *SetAddonsConfigRequest) *ProjectsZonesClustersAddonsCall {
 	c := &ProjectsZonesClustersAddonsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.projectId = projectId
@@ -8733,7 +8776,7 @@ func (c *ProjectsZonesClustersAddonsCall) Do(opts ...googleapi.CallOption) (*Ope
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the addons of a specific cluster.",
+	//   "description": "Sets the addons for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectId}/zones/{zone}/clusters/{clusterId}/addons",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.zones.clusters.addons",
@@ -9271,7 +9314,7 @@ type ProjectsZonesClustersGetCall struct {
 	header_      http.Header
 }
 
-// Get: Gets the details of a specific cluster.
+// Get: Gets the details for a specific cluster.
 func (r *ProjectsZonesClustersService) Get(projectId string, zone string, clusterId string) *ProjectsZonesClustersGetCall {
 	c := &ProjectsZonesClustersGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.projectId = projectId
@@ -9384,7 +9427,7 @@ func (c *ProjectsZonesClustersGetCall) Do(opts ...googleapi.CallOption) (*Cluste
 	}
 	return ret, nil
 	// {
-	//   "description": "Gets the details of a specific cluster.",
+	//   "description": "Gets the details for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectId}/zones/{zone}/clusters/{clusterId}",
 	//   "httpMethod": "GET",
 	//   "id": "container.projects.zones.clusters.get",
@@ -9761,7 +9804,7 @@ type ProjectsZonesClustersLocationsCall struct {
 	header_             http.Header
 }
 
-// Locations: Sets the locations of a specific cluster.
+// Locations: Sets the locations for a specific cluster.
 func (r *ProjectsZonesClustersService) Locations(projectId string, zone string, clusterId string, setlocationsrequest *SetLocationsRequest) *ProjectsZonesClustersLocationsCall {
 	c := &ProjectsZonesClustersLocationsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.projectId = projectId
@@ -9859,7 +9902,7 @@ func (c *ProjectsZonesClustersLocationsCall) Do(opts ...googleapi.CallOption) (*
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the locations of a specific cluster.",
+	//   "description": "Sets the locations for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectId}/zones/{zone}/clusters/{clusterId}/locations",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.zones.clusters.locations",
@@ -9915,7 +9958,7 @@ type ProjectsZonesClustersLoggingCall struct {
 	header_                  http.Header
 }
 
-// Logging: Sets the logging service of a specific cluster.
+// Logging: Sets the logging service for a specific cluster.
 func (r *ProjectsZonesClustersService) Logging(projectId string, zone string, clusterId string, setloggingservicerequest *SetLoggingServiceRequest) *ProjectsZonesClustersLoggingCall {
 	c := &ProjectsZonesClustersLoggingCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.projectId = projectId
@@ -10013,7 +10056,7 @@ func (c *ProjectsZonesClustersLoggingCall) Do(opts ...googleapi.CallOption) (*Op
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the logging service of a specific cluster.",
+	//   "description": "Sets the logging service for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectId}/zones/{zone}/clusters/{clusterId}/logging",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.zones.clusters.logging",
@@ -10069,7 +10112,7 @@ type ProjectsZonesClustersMasterCall struct {
 	header_             http.Header
 }
 
-// Master: Updates the master of a specific cluster.
+// Master: Updates the master for a specific cluster.
 func (r *ProjectsZonesClustersService) Master(projectId string, zone string, clusterId string, updatemasterrequest *UpdateMasterRequest) *ProjectsZonesClustersMasterCall {
 	c := &ProjectsZonesClustersMasterCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.projectId = projectId
@@ -10167,7 +10210,7 @@ func (c *ProjectsZonesClustersMasterCall) Do(opts ...googleapi.CallOption) (*Ope
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates the master of a specific cluster.",
+	//   "description": "Updates the master for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectId}/zones/{zone}/clusters/{clusterId}/master",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.zones.clusters.master",
@@ -10223,7 +10266,7 @@ type ProjectsZonesClustersMonitoringCall struct {
 	header_                     http.Header
 }
 
-// Monitoring: Sets the monitoring service of a specific cluster.
+// Monitoring: Sets the monitoring service for a specific cluster.
 func (r *ProjectsZonesClustersService) Monitoring(projectId string, zone string, clusterId string, setmonitoringservicerequest *SetMonitoringServiceRequest) *ProjectsZonesClustersMonitoringCall {
 	c := &ProjectsZonesClustersMonitoringCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.projectId = projectId
@@ -10321,7 +10364,7 @@ func (c *ProjectsZonesClustersMonitoringCall) Do(opts ...googleapi.CallOption) (
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the monitoring service of a specific cluster.",
+	//   "description": "Sets the monitoring service for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectId}/zones/{zone}/clusters/{clusterId}/monitoring",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.zones.clusters.monitoring",
@@ -10687,7 +10730,7 @@ type ProjectsZonesClustersSetMasterAuthCall struct {
 
 // SetMasterAuth: Used to set master auth materials. Currently supports
 // :-
-// Changing the admin password of a specific cluster.
+// Changing the admin password for a specific cluster.
 // This can be either via password generation or explicitly set.
 // Modify basic_auth.csv and reset the K8S API server.
 func (r *ProjectsZonesClustersService) SetMasterAuth(projectId string, zone string, clusterId string, setmasterauthrequest *SetMasterAuthRequest) *ProjectsZonesClustersSetMasterAuthCall {
@@ -10787,7 +10830,7 @@ func (c *ProjectsZonesClustersSetMasterAuthCall) Do(opts ...googleapi.CallOption
 	}
 	return ret, nil
 	// {
-	//   "description": "Used to set master auth materials. Currently supports :-\nChanging the admin password of a specific cluster.\nThis can be either via password generation or explicitly set.\nModify basic_auth.csv and reset the K8S API server.",
+	//   "description": "Used to set master auth materials. Currently supports :-\nChanging the admin password for a specific cluster.\nThis can be either via password generation or explicitly set.\nModify basic_auth.csv and reset the K8S API server.",
 	//   "flatPath": "v1beta1/projects/{projectId}/zones/{zone}/clusters/{clusterId}:setMasterAuth",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.zones.clusters.setMasterAuth",
@@ -11151,7 +11194,7 @@ type ProjectsZonesClustersUpdateCall struct {
 	header_              http.Header
 }
 
-// Update: Updates the settings of a specific cluster.
+// Update: Updates the settings for a specific cluster.
 func (r *ProjectsZonesClustersService) Update(projectId string, zone string, clusterId string, updateclusterrequest *UpdateClusterRequest) *ProjectsZonesClustersUpdateCall {
 	c := &ProjectsZonesClustersUpdateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.projectId = projectId
@@ -11249,7 +11292,7 @@ func (c *ProjectsZonesClustersUpdateCall) Do(opts ...googleapi.CallOption) (*Ope
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates the settings of a specific cluster.",
+	//   "description": "Updates the settings for a specific cluster.",
 	//   "flatPath": "v1beta1/projects/{projectId}/zones/{zone}/clusters/{clusterId}",
 	//   "httpMethod": "PUT",
 	//   "id": "container.projects.zones.clusters.update",
@@ -12477,7 +12520,7 @@ type ProjectsZonesClustersNodePoolsSetSizeCall struct {
 	header_                http.Header
 }
 
-// SetSize: Sets the size of a specific node pool.
+// SetSize: Sets the size for a specific node pool.
 func (r *ProjectsZonesClustersNodePoolsService) SetSize(projectId string, zone string, clusterId string, nodePoolId string, setnodepoolsizerequest *SetNodePoolSizeRequest) *ProjectsZonesClustersNodePoolsSetSizeCall {
 	c := &ProjectsZonesClustersNodePoolsSetSizeCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.projectId = projectId
@@ -12577,7 +12620,7 @@ func (c *ProjectsZonesClustersNodePoolsSetSizeCall) Do(opts ...googleapi.CallOpt
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets the size of a specific node pool.",
+	//   "description": "Sets the size for a specific node pool.",
 	//   "flatPath": "v1beta1/projects/{projectId}/zones/{zone}/clusters/{clusterId}/nodePools/{nodePoolId}/setSize",
 	//   "httpMethod": "POST",
 	//   "id": "container.projects.zones.clusters.nodePools.setSize",

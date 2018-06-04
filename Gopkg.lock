@@ -16,10 +16,10 @@
   version = "v0.22.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/andygrunwald/go-jira"
   packages = ["."]
-  revision = "5cfdb85cc91c6299f75b6504a1d0ec174c21be39"
-  version = "v1.3.0"
+  revision = "05574a46ff32b10de90274ded298c79f39084e66"
 
 [[projects]]
   branch = "master"
@@ -49,7 +49,7 @@
   branch = "master"
   name = "github.com/getsentry/raven-go"
   packages = ["."]
-  revision = "7452746037452673b6ba6ceb6c8aa4cbf4634f9e"
+  revision = "ed7bcb39ff10f39ab08e317ce16df282845852fa"
 
 [[projects]]
   branch = "master"
@@ -115,7 +115,7 @@
   branch = "master"
   name = "github.com/seibert-media/go-hangouts"
   packages = ["."]
-  revision = "83fa9d7311542f484b50b122ffca179a81040cbf"
+  revision = "fd090269c2a01cc69aa6a00a223b8cc880574602"
 
 [[projects]]
   name = "github.com/trivago/tgo"
@@ -173,8 +173,8 @@
     "trace/internal",
     "trace/propagation"
   ]
-  revision = "10cec2c05ea2cfb8b0d856711daedc49d8a45c56"
-  version = "v0.9.0"
+  revision = "c3ed530f775d85e577ca652cb052a52c078aad26"
+  version = "v0.11.0"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -214,7 +214,7 @@
     "internal/timeseries",
     "trace"
   ]
-  revision = "2491c5de3490fced2f6cff376127c667efeed857"
+  revision = "1e491301e022f8f977054da4c2d852decd59571f"
 
 [[projects]]
   branch = "master"
@@ -226,7 +226,7 @@
     "jws",
     "jwt"
   ]
-  revision = "cdc340f7c179dbbfa4afd43b7614e8fcadde4269"
+  revision = "1e0a3fa8ba9a5c9eb35c271780101fdaf1b205d7"
 
 [[projects]]
   branch = "master"
@@ -271,7 +271,7 @@
     "transport/grpc",
     "transport/http"
   ]
-  revision = "d7aa31fbd7da4467a8056610e654315a4c1f068e"
+  revision = "8e296ef260056b6323d10727db40512dac6d92d5"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -302,7 +302,7 @@
     "googleapis/rpc/status",
     "protobuf/field_mask"
   ]
-  revision = "7bb2a897381c9c5ab2aeb8614f758d7766af68ff"
+  revision = "81158efcc9f219c511e4d3c0d61a0e6e49c01a24"
 
 [[projects]]
   name = "google.golang.org/grpc"

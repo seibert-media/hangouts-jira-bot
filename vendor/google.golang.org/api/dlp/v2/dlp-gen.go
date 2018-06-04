@@ -245,6 +245,8 @@ func (s *GooglePrivacyDlpV2Action) MarshalJSON() ([]byte, error) {
 type GooglePrivacyDlpV2AnalyzeDataSourceRiskDetails struct {
 	CategoricalStatsResult *GooglePrivacyDlpV2CategoricalStatsResult `json:"categoricalStatsResult,omitempty"`
 
+	DeltaPresenceEstimationResult *GooglePrivacyDlpV2DeltaPresenceEstimationResult `json:"deltaPresenceEstimationResult,omitempty"`
+
 	KAnonymityResult *GooglePrivacyDlpV2KAnonymityResult `json:"kAnonymityResult,omitempty"`
 
 	KMapEstimationResult *GooglePrivacyDlpV2KMapEstimationResult `json:"kMapEstimationResult,omitempty"`
@@ -284,6 +286,18 @@ func (s *GooglePrivacyDlpV2AnalyzeDataSourceRiskDetails) MarshalJSON() ([]byte, 
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GooglePrivacyDlpV2AuxiliaryTable: An auxiliary table contains
+// statistical information on the relative
+// frequency of different quasi-identifiers values. It has one or
+// several
+// quasi-identifiers columns, and one column that indicates the
+// relative
+// frequency of each quasi-identifier tuple.
+// If a tuple is present in the data but not in the auxiliary table,
+// the
+// corresponding relative frequency is assumed to be zero (and thus,
+// the
+// tuple is highly reidentifiable).
 type GooglePrivacyDlpV2AuxiliaryTable struct {
 	// QuasiIds: Quasi-identifier columns. [required]
 	QuasiIds []*GooglePrivacyDlpV2QuasiIdField `json:"quasiIds,omitempty"`
@@ -370,6 +384,13 @@ type GooglePrivacyDlpV2BigQueryOptions struct {
 	// will be
 	// scanned. Cannot be used in conjunction with TimespanConfig.
 	RowsLimit int64 `json:"rowsLimit,omitempty,string"`
+
+	// Possible values:
+	//   "SAMPLE_METHOD_UNSPECIFIED"
+	//   "TOP" - Scan from the top (default).
+	//   "RANDOM_START" - Randomly pick the row to start scanning. The
+	// scanned rows are contiguous.
+	SampleMethod string `json:"sampleMethod,omitempty"`
 
 	// TableReference: Complete BigQuery table reference.
 	TableReference *GooglePrivacyDlpV2BigQueryTable `json:"tableReference,omitempty"`
@@ -854,6 +875,21 @@ type GooglePrivacyDlpV2CloudStorageOptions struct {
 	// wml,
 	//   xml, xsl, xsd, yml, yaml.
 	FileTypes []string `json:"fileTypes,omitempty"`
+
+	// FilesLimitPercent: Limits the number of files to scan to this
+	// percentage of the input FileSet.
+	// Number of files scanned is rounded down. Must be between 0 and
+	// 100,
+	// inclusively. Both 0 and 100 means no limit. Defaults to 0.
+	FilesLimitPercent int64 `json:"filesLimitPercent,omitempty"`
+
+	// Possible values:
+	//   "SAMPLE_METHOD_UNSPECIFIED"
+	//   "TOP" - Scan from the top (default).
+	//   "RANDOM_START" - For each file larger than bytes_limit_per_file,
+	// randomly pick the offset
+	// to start scanning. The scanned bytes are contiguous.
+	SampleMethod string `json:"sampleMethod,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "BytesLimitPerFile")
 	// to unconditionally include in API requests. By default, fields with
@@ -1424,8 +1460,7 @@ type GooglePrivacyDlpV2CryptoReplaceFfxFpeConfig struct {
 	//
 	// - a 64 bit integer is encoded followed by a single byte of value 1
 	// - a string is encoded in UTF-8 format followed by a single byte of
-	// value
-	//  å 2
+	// value 2
 	Context *GooglePrivacyDlpV2FieldId `json:"context,omitempty"`
 
 	// CryptoKey: The key used by the encryption algorithm. [required]
@@ -1518,30 +1553,28 @@ func (s *GooglePrivacyDlpV2CryptoReplaceFfxFpeConfig) MarshalJSON() ([]byte, err
 // sensitive information configurable to the data in question.
 type GooglePrivacyDlpV2CustomInfoType struct {
 	// DetectionRules: Set of detection rules to apply to all findings of
-	// this custom info type.
+	// this CustomInfoType.
 	// Rules are applied in order that they are specified. Not supported for
 	// the
-	// `surrogate_type` custom info type.
+	// `surrogate_type` CustomInfoType.
 	DetectionRules []*GooglePrivacyDlpV2DetectionRule `json:"detectionRules,omitempty"`
 
-	// Dictionary: Dictionary-based custom info type.
+	// Dictionary: A list of phrases to detect as a CustomInfoType.
 	Dictionary *GooglePrivacyDlpV2Dictionary `json:"dictionary,omitempty"`
 
-	// InfoType: Info type configuration. All custom info types must have
-	// configurations
-	// that do not conflict with built-in info types or other custom info
-	// types.
+	// InfoType: All CustomInfoTypes must have a name
+	// that does not conflict with built-in InfoTypes or other
+	// CustomInfoTypes.
 	InfoType *GooglePrivacyDlpV2InfoType `json:"infoType,omitempty"`
 
-	// Likelihood: Likelihood to return for this custom info type. This base
+	// Likelihood: Likelihood to return for this CustomInfoType. This base
 	// value can be
 	// altered by a detection rule if the finding meets the criteria
 	// specified by
 	// the rule. Defaults to `VERY_LIKELY` if not specified.
 	//
 	// Possible values:
-	//   "LIKELIHOOD_UNSPECIFIED" - Default value; information with all
-	// likelihoods is included.
+	//   "LIKELIHOOD_UNSPECIFIED" - Default value; same as POSSIBLE.
 	//   "VERY_UNLIKELY" - Few matching elements.
 	//   "UNLIKELY"
 	//   "POSSIBLE" - Some matching elements.
@@ -1549,10 +1582,12 @@ type GooglePrivacyDlpV2CustomInfoType struct {
 	//   "VERY_LIKELY" - Many matching elements.
 	Likelihood string `json:"likelihood,omitempty"`
 
-	// Regex: Regex-based custom info type.
+	// Regex: Regular expression based CustomInfoType.
 	Regex *GooglePrivacyDlpV2Regex `json:"regex,omitempty"`
 
-	// SurrogateType: Surrogate info type.
+	// SurrogateType: Message for detecting output from deidentification
+	// transformations that
+	// support reversing.
 	SurrogateType *GooglePrivacyDlpV2SurrogateType `json:"surrogateType,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "DetectionRules") to
@@ -1939,8 +1974,234 @@ func (s *GooglePrivacyDlpV2DeidentifyTemplate) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// GooglePrivacyDlpV2DetectionRule: Rule for modifying a custom info
-// type to alter behavior under certain
+// GooglePrivacyDlpV2DeltaPresenceEstimationConfig: δ-presence metric,
+// used to estimate how likely it is for an attacker to
+// figure out that one given individual appears in a de-identified
+// dataset.
+// Similarly to the k-map metric, we cannot compute δ-presence exactly
+// without
+// knowing the attack dataset, so we use a statistical model instead.
+type GooglePrivacyDlpV2DeltaPresenceEstimationConfig struct {
+	// AuxiliaryTables: Several auxiliary tables can be used in the
+	// analysis. Each custom_tag
+	// used to tag a quasi-identifiers field must appear in exactly
+	// one
+	// field of one auxiliary table.
+	AuxiliaryTables []*GooglePrivacyDlpV2StatisticalTable `json:"auxiliaryTables,omitempty"`
+
+	// QuasiIds: Fields considered to be quasi-identifiers. No two fields
+	// can have the
+	// same tag. [required]
+	QuasiIds []*GooglePrivacyDlpV2QuasiId `json:"quasiIds,omitempty"`
+
+	// RegionCode: ISO 3166-1 alpha-2 region code to use in the statistical
+	// modeling.
+	// Required if no column is tagged with a region-specific InfoType
+	// (like
+	// US_ZIP_5) or a region code.
+	RegionCode string `json:"regionCode,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AuxiliaryTables") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AuxiliaryTables") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GooglePrivacyDlpV2DeltaPresenceEstimationConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod GooglePrivacyDlpV2DeltaPresenceEstimationConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GooglePrivacyDlpV2DeltaPresenceEstimationHistogramBucket: A
+// DeltaPresenceEstimationHistogramBucket message with the
+// following
+// values:
+//   min_probability: 0.1
+//   max_probability: 0.2
+//   frequency: 42
+// means that there are 42 records for which δ is in [0.1, 0.2).
+// An
+// important particular case is when min_probability = max_probability =
+// 1:
+// then, every individual who shares this quasi-identifier combination
+// is in
+// the dataset.
+type GooglePrivacyDlpV2DeltaPresenceEstimationHistogramBucket struct {
+	// BucketSize: Number of records within these probability bounds.
+	BucketSize int64 `json:"bucketSize,omitempty,string"`
+
+	// BucketValueCount: Total number of distinct quasi-identifier tuple
+	// values in this bucket.
+	BucketValueCount int64 `json:"bucketValueCount,omitempty,string"`
+
+	// BucketValues: Sample of quasi-identifier tuple values in this bucket.
+	// The total
+	// number of classes returned per bucket is capped at 20.
+	BucketValues []*GooglePrivacyDlpV2DeltaPresenceEstimationQuasiIdValues `json:"bucketValues,omitempty"`
+
+	// MaxProbability: Always greater than or equal to min_probability.
+	MaxProbability float64 `json:"maxProbability,omitempty"`
+
+	// MinProbability: Between 0 and 1.
+	MinProbability float64 `json:"minProbability,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BucketSize") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BucketSize") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GooglePrivacyDlpV2DeltaPresenceEstimationHistogramBucket) MarshalJSON() ([]byte, error) {
+	type NoMethod GooglePrivacyDlpV2DeltaPresenceEstimationHistogramBucket
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *GooglePrivacyDlpV2DeltaPresenceEstimationHistogramBucket) UnmarshalJSON(data []byte) error {
+	type NoMethod GooglePrivacyDlpV2DeltaPresenceEstimationHistogramBucket
+	var s1 struct {
+		MaxProbability gensupport.JSONFloat64 `json:"maxProbability"`
+		MinProbability gensupport.JSONFloat64 `json:"minProbability"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxProbability = float64(s1.MaxProbability)
+	s.MinProbability = float64(s1.MinProbability)
+	return nil
+}
+
+// GooglePrivacyDlpV2DeltaPresenceEstimationQuasiIdValues: A tuple of
+// values for the quasi-identifier columns.
+type GooglePrivacyDlpV2DeltaPresenceEstimationQuasiIdValues struct {
+	// EstimatedProbability: The estimated probability that a given
+	// individual sharing these
+	// quasi-identifier values is in the dataset. This value, typically
+	// called
+	// δ, is the ratio between the number of records in the dataset with
+	// these
+	// quasi-identifier values, and the total number of individuals
+	// (inside
+	// *and* outside the dataset) with these quasi-identifier values.
+	// For example, if there are 15 individuals in the dataset who share
+	// the
+	// same quasi-identifier values, and an estimated 100 people in the
+	// entire
+	// population with these values, then δ is 0.15.
+	EstimatedProbability float64 `json:"estimatedProbability,omitempty"`
+
+	// QuasiIdsValues: The quasi-identifier values.
+	QuasiIdsValues []*GooglePrivacyDlpV2Value `json:"quasiIdsValues,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "EstimatedProbability") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EstimatedProbability") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GooglePrivacyDlpV2DeltaPresenceEstimationQuasiIdValues) MarshalJSON() ([]byte, error) {
+	type NoMethod GooglePrivacyDlpV2DeltaPresenceEstimationQuasiIdValues
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *GooglePrivacyDlpV2DeltaPresenceEstimationQuasiIdValues) UnmarshalJSON(data []byte) error {
+	type NoMethod GooglePrivacyDlpV2DeltaPresenceEstimationQuasiIdValues
+	var s1 struct {
+		EstimatedProbability gensupport.JSONFloat64 `json:"estimatedProbability"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.EstimatedProbability = float64(s1.EstimatedProbability)
+	return nil
+}
+
+// GooglePrivacyDlpV2DeltaPresenceEstimationResult: Result of the
+// δ-presence computation. Note that these results are an
+// estimation, not exact values.
+type GooglePrivacyDlpV2DeltaPresenceEstimationResult struct {
+	// DeltaPresenceEstimationHistogram: The intervals [min_probability,
+	// max_probability) do not overlap. If a
+	// value doesn't correspond to any such interval, the associated
+	// frequency
+	// is zero. For example, the following records:
+	//   {min_probability: 0, max_probability: 0.1, frequency: 17}
+	//   {min_probability: 0.2, max_probability: 0.3, frequency: 42}
+	//   {min_probability: 0.3, max_probability: 0.4, frequency: 99}
+	// mean that there are no record with an estimated probability in [0.1,
+	// 0.2)
+	// nor larger or equal to 0.4.
+	DeltaPresenceEstimationHistogram []*GooglePrivacyDlpV2DeltaPresenceEstimationHistogramBucket `json:"deltaPresenceEstimationHistogram,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "DeltaPresenceEstimationHistogram") to unconditionally include in API
+	// requests. By default, fields with empty values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g.
+	// "DeltaPresenceEstimationHistogram") to include in API requests with
+	// the JSON null value. By default, fields with empty values are omitted
+	// from API requests. However, any field with an empty value appearing
+	// in NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GooglePrivacyDlpV2DeltaPresenceEstimationResult) MarshalJSON() ([]byte, error) {
+	type NoMethod GooglePrivacyDlpV2DeltaPresenceEstimationResult
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GooglePrivacyDlpV2DetectionRule: Rule for modifying a CustomInfoType
+// to alter behavior under certain
 // circumstances, depending on the specific details of the rule. Not
 // supported
 // for the `surrogate_type` custom info type.
@@ -2375,8 +2636,7 @@ type GooglePrivacyDlpV2Finding struct {
 	// correct.
 	//
 	// Possible values:
-	//   "LIKELIHOOD_UNSPECIFIED" - Default value; information with all
-	// likelihoods is included.
+	//   "LIKELIHOOD_UNSPECIFIED" - Default value; same as POSSIBLE.
 	//   "VERY_UNLIKELY" - Few matching elements.
 	//   "UNLIKELY"
 	//   "POSSIBLE" - Some matching elements.
@@ -2555,11 +2815,12 @@ func (s *GooglePrivacyDlpV2FixedSizeBucketingConfig) UnmarshalJSON(data []byte) 
 	return nil
 }
 
-// GooglePrivacyDlpV2HotwordRule: Detection rule that adjusts the
-// likelihood of findings within a certain
+// GooglePrivacyDlpV2HotwordRule: The rule that adjusts the likelihood
+// of findings within a certain
 // proximity of hotwords.
 type GooglePrivacyDlpV2HotwordRule struct {
-	// HotwordRegex: Regex pattern defining what qualifies as a hotword.
+	// HotwordRegex: Regular expression pattern defining what qualifies as a
+	// hotword.
 	HotwordRegex *GooglePrivacyDlpV2Regex `json:"hotwordRegex,omitempty"`
 
 	// LikelihoodAdjustment: Likelihood adjustment to apply to all matching
@@ -2682,7 +2943,12 @@ func (s *GooglePrivacyDlpV2ImageRedactionConfig) MarshalJSON() ([]byte, error) {
 
 // GooglePrivacyDlpV2InfoType: Type of information detected by the API.
 type GooglePrivacyDlpV2InfoType struct {
-	// Name: Name of the information type.
+	// Name: Name of the information type. Either a name of your choosing
+	// when
+	// creating a CustomInfoType, or one of the names listed
+	// at https://cloud.google.com/dlp/docs/infotypes-reference when
+	// specifying
+	// a built-in type.
 	Name string `json:"name,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Name") to
@@ -2922,7 +3188,9 @@ type GooglePrivacyDlpV2InspectConfig struct {
 
 	// InfoTypes: Restricts what info_types to look for. The values must
 	// correspond to
-	// InfoType values returned by ListInfoTypes or found in documentation.
+	// InfoType values returned by ListInfoTypes or listed
+	// at
+	// https://cloud.google.com/dlp/docs/infotypes-reference.
 	InfoTypes []*GooglePrivacyDlpV2InfoType `json:"infoTypes,omitempty"`
 
 	Limits *GooglePrivacyDlpV2FindingLimits `json:"limits,omitempty"`
@@ -2932,8 +3200,7 @@ type GooglePrivacyDlpV2InspectConfig struct {
 	// POSSIBLE.
 	//
 	// Possible values:
-	//   "LIKELIHOOD_UNSPECIFIED" - Default value; information with all
-	// likelihoods is included.
+	//   "LIKELIHOOD_UNSPECIFIED" - Default value; same as POSSIBLE.
 	//   "VERY_UNLIKELY" - Few matching elements.
 	//   "UNLIKELY"
 	//   "POSSIBLE" - Some matching elements.
@@ -3941,8 +4208,7 @@ type GooglePrivacyDlpV2LikelihoodAdjustment struct {
 	// FixedLikelihood: Set the likelihood of a finding to a fixed value.
 	//
 	// Possible values:
-	//   "LIKELIHOOD_UNSPECIFIED" - Default value; information with all
-	// likelihoods is included.
+	//   "LIKELIHOOD_UNSPECIFIED" - Default value; same as POSSIBLE.
 	//   "VERY_UNLIKELY" - Few matching elements.
 	//   "UNLIKELY"
 	//   "POSSIBLE" - Some matching elements.
@@ -4496,6 +4762,8 @@ func (s *GooglePrivacyDlpV2PrimitiveTransformation) MarshalJSON() ([]byte, error
 type GooglePrivacyDlpV2PrivacyMetric struct {
 	CategoricalStatsConfig *GooglePrivacyDlpV2CategoricalStatsConfig `json:"categoricalStatsConfig,omitempty"`
 
+	DeltaPresenceEstimationConfig *GooglePrivacyDlpV2DeltaPresenceEstimationConfig `json:"deltaPresenceEstimationConfig,omitempty"`
+
 	KAnonymityConfig *GooglePrivacyDlpV2KAnonymityConfig `json:"kAnonymityConfig,omitempty"`
 
 	KMapEstimationConfig *GooglePrivacyDlpV2KMapEstimationConfig `json:"kMapEstimationConfig,omitempty"`
@@ -4614,6 +4882,56 @@ func (s *GooglePrivacyDlpV2PublishToPubSub) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GooglePrivacyDlpV2QuasiId: A column with a semantic tag attached.
+type GooglePrivacyDlpV2QuasiId struct {
+	// CustomTag: A column can be tagged with a custom tag. In this case,
+	// the user must
+	// indicate an auxiliary table that contains statistical information
+	// on
+	// the possible values of this column (below).
+	CustomTag string `json:"customTag,omitempty"`
+
+	// Field: Identifies the column. [required]
+	Field *GooglePrivacyDlpV2FieldId `json:"field,omitempty"`
+
+	// Inferred: If no semantic tag is indicated, we infer the statistical
+	// model from
+	// the distribution of values in the input data
+	Inferred *GoogleProtobufEmpty `json:"inferred,omitempty"`
+
+	// InfoType: A column can be tagged with a InfoType to use the relevant
+	// public
+	// dataset as a statistical model of population, if available.
+	// We
+	// currently support US ZIP codes, region codes, ages and genders.
+	// To programmatically obtain the list of supported InfoTypes,
+	// use
+	// ListInfoTypes with the supported_by=RISK_ANALYSIS filter.
+	InfoType *GooglePrivacyDlpV2InfoType `json:"infoType,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CustomTag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CustomTag") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GooglePrivacyDlpV2QuasiId) MarshalJSON() ([]byte, error) {
+	type NoMethod GooglePrivacyDlpV2QuasiId
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // GooglePrivacyDlpV2QuasiIdField: A quasi-identifier column has a
 // custom_tag, used to know which column
 // in the data corresponds to which column in the statistical model.
@@ -4641,6 +4959,37 @@ type GooglePrivacyDlpV2QuasiIdField struct {
 
 func (s *GooglePrivacyDlpV2QuasiIdField) MarshalJSON() ([]byte, error) {
 	type NoMethod GooglePrivacyDlpV2QuasiIdField
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// GooglePrivacyDlpV2QuasiIdentifierField: A quasi-identifier column has
+// a custom_tag, used to know which column
+// in the data corresponds to which column in the statistical model.
+type GooglePrivacyDlpV2QuasiIdentifierField struct {
+	CustomTag string `json:"customTag,omitempty"`
+
+	Field *GooglePrivacyDlpV2FieldId `json:"field,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CustomTag") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CustomTag") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GooglePrivacyDlpV2QuasiIdentifierField) MarshalJSON() ([]byte, error) {
+	type NoMethod GooglePrivacyDlpV2QuasiIdentifierField
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -5324,6 +5673,55 @@ func (s *GooglePrivacyDlpV2Schedule) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GooglePrivacyDlpV2StatisticalTable: An auxiliary table containing
+// statistical information on the relative
+// frequency of different quasi-identifiers values. It has one or
+// several
+// quasi-identifiers columns, and one column that indicates the
+// relative
+// frequency of each quasi-identifier tuple.
+// If a tuple is present in the data but not in the auxiliary table,
+// the
+// corresponding relative frequency is assumed to be zero (and thus,
+// the
+// tuple is highly reidentifiable).
+type GooglePrivacyDlpV2StatisticalTable struct {
+	// QuasiIds: Quasi-identifier columns. [required]
+	QuasiIds []*GooglePrivacyDlpV2QuasiIdentifierField `json:"quasiIds,omitempty"`
+
+	// RelativeFrequency: The relative frequency column must contain a
+	// floating-point number
+	// between 0 and 1 (inclusive). Null values are assumed to be
+	// zero.
+	// [required]
+	RelativeFrequency *GooglePrivacyDlpV2FieldId `json:"relativeFrequency,omitempty"`
+
+	// Table: Auxiliary table location. [required]
+	Table *GooglePrivacyDlpV2BigQueryTable `json:"table,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "QuasiIds") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "QuasiIds") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GooglePrivacyDlpV2StatisticalTable) MarshalJSON() ([]byte, error) {
+	type NoMethod GooglePrivacyDlpV2StatisticalTable
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // GooglePrivacyDlpV2StorageConfig: Shared message indicating Cloud
 // storage type.
 type GooglePrivacyDlpV2StorageConfig struct {
@@ -5413,7 +5811,7 @@ func (s *GooglePrivacyDlpV2SummaryResult) MarshalJSON() ([]byte, error) {
 // as
 // output. This should be used in conjunction with a field on
 // the
-// transformation such as `surrogate_info_type`. This custom info type
+// transformation such as `surrogate_info_type`. This CustomInfoType
 // does
 // not support the use of `detection_rules`.
 type GooglePrivacyDlpV2SurrogateType struct {
