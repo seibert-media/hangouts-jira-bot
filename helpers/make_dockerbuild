@@ -22,4 +22,4 @@ dev-in-docker:
 
 
 build-image:
-	docker build --no-cache --rm=true $(DOCKER_TAGS) --build-arg TOOL=$(NAME) -f Dockerfile.static .
+	docker build --no-cache --rm=true $(DOCKER_TAGS) --build-arg TOOL=$(NAME) --build-arg VERSION=$(VERSION) -f Dockerfile.static .

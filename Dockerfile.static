@@ -9,4 +9,4 @@ ARG TOOL
 ADD ./build/ /
 COPY ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-ENTRYPOINT ["./app"]/app"]
+ENTRYPOINT ["./app"]

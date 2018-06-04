@@ -74,10 +74,14 @@ func (j *JIRA) Callback(ctx context.Context, m *pubsub.Message) {
 		m, err := j.BuildMessage(issue, msg)
 		if err != nil {
 			j.Warn("build card failed", zap.Error(err))
+			mb, _ := json.Marshal(m)
+			j.Debug("message", zap.String("content", string(mb)))
 			j.hangouts.Send(msg.Space.Name, j.BuildError(errors.Wrap(err, "build card failed"), msg.Message.Thread.Name))
 			return
 		}
 		err = j.hangouts.Send(msg.Space.Name, m)
+		mb, _ := json.Marshal(m)
+		j.Debug("message", zap.String("content", string(mb)))
 		if err != nil {
 			j.Error("send card error", zap.Error(err))
 			j.hangouts.Send(msg.Space.Name, j.BuildError(errors.Wrap(err, "send card error"), msg.Message.Thread.Name))

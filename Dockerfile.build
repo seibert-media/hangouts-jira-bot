@@ -1,4 +1,4 @@
-FROM golang:1.9
+FROM golang:1.10
 
 LABEL maintainer //SEIBERT/MEDIA GmbH <docker@seibert-media.net>
 LABEL type "public"
@@ -14,4 +14,4 @@ WORKDIR /go/src/${GIT_HOST}/${REPO}/${NAME}/
 
 RUN make ${COMMAND}
 
-CMD ["/bin/bash"]bash"]
+CMD ["/bin/bash"]
