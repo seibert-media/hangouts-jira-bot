@@ -1,5 +1,12 @@
 # Hangouts Jira Bot
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/seibert-media/hangouts-jira-bot)](https://goreportcard.com/report/github.com/seibert-media/hangouts-jira-bot)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/72cc701000034d60a0f5caeace0878de)](https://www.codacy.com/app/seibert-media/hangouts-jira-bot?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=seibert-media/hangouts-jira-bot&amp;utm_campaign=Badge_Grade)
+[![Build Status](https://travis-ci.org/seibert-media/hangouts-jira-bot.svg?branch=master)](https://travis-ci.org/seibert-media/hangouts-jira-bot)
+[![Docker Image](https://quay.io/repository/seibertmedia/hangouts-jira-bot/status "Docker Image")](https://quay.io/repository/seibertmedia/hangouts-jira-bot)
+[![GitHub license](https://img.shields.io/badge/license-AGPL-blue.svg)](https://raw.githubusercontent.com/seibert-media/hangouts-jira-bot/master/LICENSE)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg)](https://godoc.org/github.com/seibert-media/hangouts-jira-bot)
+
 A simple bot sending cards containing Jira Issues to the respective Hangouts Chat Thread (Jira Server only) using Google Pub/Sub.
 
 ## Why
