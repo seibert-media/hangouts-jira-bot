@@ -1,5 +1,7 @@
 // Package monitoring provides access to the Stackdriver Monitoring API.
 //
+// This package is DEPRECATED. Use package cloud.google.com/go/monitoring/apiv3 instead.
+//
 // See https://cloud.google.com/monitoring/api/
 //
 // Usage example:
@@ -1068,9 +1070,7 @@ type Distribution struct {
 	// histogram is provided.
 	Count int64 `json:"count,omitempty,string"`
 
-	// Exemplars: Must be in increasing order of |value| field. The current
-	// requirement enforced by the backend is that at most one Exemplar will
-	// fall into any bucket.
+	// Exemplars: Must be in increasing order of value field.
 	Exemplars []*Exemplar `json:"exemplars,omitempty"`
 
 	// Mean: The arithmetic mean of the values in the population. If count
@@ -1163,6 +1163,47 @@ type Documentation struct {
 
 func (s *Documentation) MarshalJSON() ([]byte, error) {
 	type NoMethod Documentation
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// DroppedLabels: A set of (label, value) pairs which were dropped
+// during aggregation, attached to google.api.Distribution.Exemplars in
+// google.api.Distribution values during aggregation.These values are
+// used in combination with the label values that remain on the
+// aggregated Distribution timeseries to construct the full label set
+// for the exemplar values. The resulting full label set may be used to
+// identify the specific task/job/instance (for example) which may be
+// contributing to a long-tail, while allowing the storage savings of
+// only storing aggregated distribution values for a large group.Note
+// that there are no guarantees on ordering of the labels from
+// exemplar-to-exemplar and from distribution-to-distribution in the
+// same stream, and there may be duplicates. It is up to clients to
+// resolve any ambiguities.
+type DroppedLabels struct {
+	// Label: Map from label to its value, for all labels dropped in any
+	// aggregation.
+	Label map[string]string `json:"label,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Label") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Label") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DroppedLabels) MarshalJSON() ([]byte, error) {
+	type NoMethod DroppedLabels
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -2298,6 +2339,10 @@ type MetricDescriptor struct {
 	// failed.
 	Labels []*LabelDescriptor `json:"labels,omitempty"`
 
+	// Metadata: Optional. Metadata which can be used to guide usage of the
+	// metric.
+	Metadata *MetricDescriptorMetadata `json:"metadata,omitempty"`
+
 	// MetricKind: Whether the metric records instantaneous values, changes
 	// to a value, etc. Some combinations of metric_kind and value_type
 	// might not be supported.
@@ -2316,22 +2361,69 @@ type MetricDescriptor struct {
 	Name string `json:"name,omitempty"`
 
 	// Type: The metric type, including its DNS name prefix. The type is not
-	// URL-encoded. All user-defined custom metric types have the DNS name
-	// custom.googleapis.com. Metric types should use a natural hierarchical
-	// grouping. For
+	// URL-encoded. All user-defined metric types have the DNS name
+	// custom.googleapis.com or external.googleapis.com. Metric types should
+	// use a natural hierarchical grouping. For
 	// example:
 	// "custom.googleapis.com/invoice/paid/amount"
-	// "appengine.google
-	// apis.com/http/server/response_latencies"
+	// "external.googlea
+	// pis.com/prometheus/up"
+	// "appengine.googleapis.com/http/server/response_
+	// latencies"
 	//
 	Type string `json:"type,omitempty"`
 
-	// Unit: Optional. The unit in which the metric value is reported. For
-	// example, kBy/s means kilobytes/sec, and 1 is the dimensionless unit.
-	// The supported units are a subset of The Unified Code for Units of
-	// Measure standard (http://unitsofmeasure.org/ucum.html).<br><br> This
-	// field is part of the metric's documentation, but it is ignored by
-	// Stackdriver.
+	// Unit: The unit in which the metric value is reported. It is only
+	// applicable if the value_type is INT64, DOUBLE, or DISTRIBUTION. The
+	// supported units are a subset of The Unified Code for Units of Measure
+	// (http://unitsofmeasure.org/ucum.html) standard:Basic units (UNIT)
+	// bit bit
+	// By byte
+	// s second
+	// min minute
+	// h hour
+	// d dayPrefixes (PREFIX)
+	// k kilo (10**3)
+	// M mega (10**6)
+	// G giga (10**9)
+	// T tera (10**12)
+	// P peta (10**15)
+	// E exa (10**18)
+	// Z zetta (10**21)
+	// Y yotta (10**24)
+	// m milli (10**-3)
+	// u micro (10**-6)
+	// n nano (10**-9)
+	// p pico (10**-12)
+	// f femto (10**-15)
+	// a atto (10**-18)
+	// z zepto (10**-21)
+	// y yocto (10**-24)
+	// Ki kibi (2**10)
+	// Mi mebi (2**20)
+	// Gi gibi (2**30)
+	// Ti tebi (2**40)GrammarThe grammar also includes these connectors:
+	// / division (as an infix operator, e.g. 1/s).
+	// . multiplication (as an infix operator, e.g. GBy.d)The grammar for a
+	// unit is as follows:
+	// Expression = Component { "." Component } { "/" Component }
+	// ;
+	//
+	// Component = ( [ PREFIX ] UNIT | "%" ) [ Annotation ]
+	//           | Annotation
+	//           | "1"
+	//           ;
+	//
+	// Annotation = "{" NAME "}" ;
+	// Notes:
+	// Annotation is just a comment if it follows a UNIT and is  equivalent
+	// to 1 if it is used alone. For examples,  {requests}/s == 1/s,
+	// By{transmitted}/s == By/s.
+	// NAME is a sequence of non-blank printable ASCII characters not
+	// containing '{' or '}'.
+	// 1 represents dimensionless value 1, such as in 1/s.
+	// % represents dimensionless value 1/100, and annotates values giving
+	// a percentage.
 	Unit string `json:"unit,omitempty"`
 
 	// ValueType: Whether the measurement is an integer, a floating-point
@@ -2373,6 +2465,76 @@ type MetricDescriptor struct {
 
 func (s *MetricDescriptor) MarshalJSON() ([]byte, error) {
 	type NoMethod MetricDescriptor
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// MetricDescriptorMetadata: Additional annotations that can be used to
+// guide the usage of a metric.
+type MetricDescriptorMetadata struct {
+	// IngestDelay: The delay of data points caused by ingestion. Data
+	// points older than this age are guaranteed to be ingested and
+	// available to be read, excluding data loss due to errors.
+	IngestDelay string `json:"ingestDelay,omitempty"`
+
+	// LaunchStage: The launch stage of the metric definition.
+	//
+	// Possible values:
+	//   "LAUNCH_STAGE_UNSPECIFIED" - Do not use this default value.
+	//   "EARLY_ACCESS" - Early Access features are limited to a closed
+	// group of testers. To use these features, you must sign up in advance
+	// and sign a Trusted Tester agreement (which includes confidentiality
+	// provisions). These features may be unstable, changed in
+	// backward-incompatible ways, and are not guaranteed to be released.
+	//   "ALPHA" - Alpha is a limited availability test for releases before
+	// they are cleared for widespread use. By Alpha, all significant design
+	// issues are resolved and we are in the process of verifying
+	// functionality. Alpha customers need to apply for access, agree to
+	// applicable terms, and have their projects whitelisted. Alpha releases
+	// don’t have to be feature complete, no SLAs are provided, and there
+	// are no technical support obligations, but they will be far enough
+	// along that customers can actually use them in test environments or
+	// for limited-use tests -- just like they would in normal production
+	// cases.
+	//   "BETA" - Beta is the point at which we are ready to open a release
+	// for any customer to use. There are no SLA or technical support
+	// obligations in a Beta release. Products will be complete from a
+	// feature perspective, but may have some open outstanding issues. Beta
+	// releases are suitable for limited production use cases.
+	//   "GA" - GA features are open to all developers and are considered
+	// stable and fully qualified for production use.
+	//   "DEPRECATED" - Deprecated features are scheduled to be shut down
+	// and removed. For more information, see the “Deprecation Policy”
+	// section of our Terms of Service (https://cloud.google.com/terms/) and
+	// the Google Cloud Platform Subject to the Deprecation Policy
+	// (https://cloud.google.com/terms/deprecation) documentation.
+	LaunchStage string `json:"launchStage,omitempty"`
+
+	// SamplePeriod: The sampling period of metric data points. For metrics
+	// which are written periodically, consecutive data points are stored at
+	// this time interval, excluding data loss due to errors. Metrics with a
+	// higher granularity have a smaller sampling period.
+	SamplePeriod string `json:"samplePeriod,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "IngestDelay") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "IngestDelay") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *MetricDescriptorMetadata) MarshalJSON() ([]byte, error) {
+	type NoMethod MetricDescriptorMetadata
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -2623,17 +2785,15 @@ func (s *MonitoredResourceDescriptor) MarshalJSON() ([]byte, error) {
 // MonitoredResourceMetadata: Auxiliary metadata for a MonitoredResource
 // object. MonitoredResource objects contain the minimum set of
 // information to uniquely identify a monitored resource instance. There
-// is some other useful auxiliary metadata. Google Stackdriver
-// Monitoring & Logging uses an ingestion pipeline to extract metadata
-// for cloud resources of all types , and stores the metadata in this
-// message.
+// is some other useful auxiliary metadata. Monitoring and Logging use
+// an ingestion pipeline to extract metadata for cloud resources of all
+// types, and store the metadata in this message.
 type MonitoredResourceMetadata struct {
 	// SystemLabels: Output only. Values for predefined system metadata
-	// labels. System labels are a kind of metadata extracted by Google
-	// Stackdriver. Stackdriver determines what system labels are useful and
-	// how to obtain their values. Some examples: "machine_image", "vpc",
-	// "subnet_id", "security_group", "name", etc. System label values can
-	// be only strings, Boolean values, or a list of strings. For example:
+	// labels. System labels are a kind of metadata extracted by Google,
+	// including "machine_image", "vpc", "subnet_id", "security_group",
+	// "name", etc. System label values can be only strings, Boolean values,
+	// or a list of strings. For example:
 	// { "name": "my-test-instance",
 	//   "security_group": ["a", "b", "c"],
 	//   "spot_instance": false }
@@ -3079,6 +3239,44 @@ type SourceContext struct {
 
 func (s *SourceContext) MarshalJSON() ([]byte, error) {
 	type NoMethod SourceContext
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// SpanContext: The context of a span, attached to
+// google.api.Distribution.Exemplars in google.api.Distribution values
+// during aggregation.It contains the name of a span with format:
+// projects/PROJECT_ID/traces/TRACE_ID/spans/SPAN_ID
+type SpanContext struct {
+	// SpanName: The resource name of the span in the following
+	// format:
+	// projects/[PROJECT_ID]/traces/[TRACE_ID]/spans/[SPAN_ID]
+	// TRACE_
+	// ID is a unique identifier for a trace within a project; it is a
+	// 32-character hexadecimal encoding of a 16-byte array.SPAN_ID is a
+	// unique identifier for a span within a trace; it is a 16-character
+	// hexadecimal encoding of an 8-byte array.
+	SpanName string `json:"spanName,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "SpanName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "SpanName") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SpanContext) MarshalJSON() ([]byte, error) {
+	type NoMethod SpanContext
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }

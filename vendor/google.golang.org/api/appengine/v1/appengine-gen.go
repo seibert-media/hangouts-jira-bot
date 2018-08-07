@@ -1004,12 +1004,12 @@ func (s *DebugInstanceRequest) MarshalJSON() ([]byte, error) {
 // Deployment: Code and application artifacts used to deploy a version
 // to App Engine.
 type Deployment struct {
-	// CloudBuildOptions: Options for any Google Cloud Container Builder
-	// builds created as a part of this deployment.Note that this is
-	// orthogonal to the build parameter, where the deployment depends on an
-	// already existing cloud build. These options will only be used if a
-	// new build is created, such as when deploying to the App Engine
-	// flexible environment using files or zip.
+	// CloudBuildOptions: Options for any Google Cloud Build builds created
+	// as a part of this deployment.Note that this is orthogonal to the
+	// build parameter, where the deployment depends on an already existing
+	// cloud build. These options will only be used if a new build is
+	// created, such as when deploying to the App Engine flexible
+	// environment using files or zip.
 	CloudBuildOptions *CloudBuildOptions `json:"cloudBuildOptions,omitempty"`
 
 	// Container: The Docker image for the container that runs the version.
@@ -1176,6 +1176,17 @@ type EndpointsApiService struct {
 	// "myapi.endpoints.myproject.cloud.goog"
 	Name string `json:"name,omitempty"`
 
+	// RolloutStrategy: Endpoints rollout strategy. If FIXED, config_id must
+	// be specified. If MANAGED, config_id must be omitted.
+	//
+	// Possible values:
+	//   "UNSPECIFIED_ROLLOUT_STRATEGY" - Not specified. Defaults to FIXED.
+	//   "FIXED" - Endpoints service configuration ID will be fixed to the
+	// configuration ID specified by config_id.
+	//   "MANAGED" - Endpoints service configuration ID will be updated with
+	// each rollout.
+	RolloutStrategy string `json:"rolloutStrategy,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g. "ConfigId") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
@@ -1195,6 +1206,35 @@ type EndpointsApiService struct {
 
 func (s *EndpointsApiService) MarshalJSON() ([]byte, error) {
 	type NoMethod EndpointsApiService
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Entrypoint: The entrypoint for the application.
+type Entrypoint struct {
+	// Shell: The format should be a shell command that can be fed to bash
+	// -c.
+	Shell string `json:"shell,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Shell") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Shell") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Entrypoint) MarshalJSON() ([]byte, error) {
+	type NoMethod Entrypoint
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -3238,7 +3278,8 @@ type UrlMap struct {
 	// status code and an error message.
 	AuthFailAction string `json:"authFailAction,omitempty"`
 
-	// Login: Level of login required to access this resource.
+	// Login: Level of login required to access this resource. Not supported
+	// for Node.js in the App Engine standard environment.
 	//
 	// Possible values:
 	//   "LOGIN_UNSPECIFIED" - Not specified. LOGIN_OPTIONAL is assumed.
@@ -3264,8 +3305,9 @@ type UrlMap struct {
 	//   "REDIRECT_HTTP_RESPONSE_CODE_307" - 307 Temporary Redirect code.
 	RedirectHttpResponseCode string `json:"redirectHttpResponseCode,omitempty"`
 
-	// Script: Executes a script to handle the request that matches this URL
-	// pattern.
+	// Script: Executes a script to handle the requests that match this URL
+	// pattern. Only the auto value is supported for Node.js in the App
+	// Engine standard environment, for example "script": "auto".
 	Script *ScriptHandler `json:"script,omitempty"`
 
 	// SecurityLevel: Security (HTTPS) enforcement for this URL.
@@ -3371,6 +3413,9 @@ type Version struct {
 	// endpoints_api_service is set, the Cloud Endpoints Extensible Service
 	// Proxy will be provided to serve the API implemented by the app.
 	EndpointsApiService *EndpointsApiService `json:"endpointsApiService,omitempty"`
+
+	// Entrypoint: The entrypoint for the application.
+	Entrypoint *Entrypoint `json:"entrypoint,omitempty"`
 
 	// Env: App Engine execution environment for this version.Defaults to
 	// standard.

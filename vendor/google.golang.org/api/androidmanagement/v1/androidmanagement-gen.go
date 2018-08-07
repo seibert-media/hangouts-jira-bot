@@ -389,20 +389,19 @@ type ApplicationPolicy struct {
 	//   "ENABLE_SYSTEM_APP" - Grants access for enabling system apps.
 	DelegatedScopes []string `json:"delegatedScopes,omitempty"`
 
-	// Disabled: Whether the app should be disabled, but app data is
-	// preserved.
+	// Disabled: Whether the app is disabled. When disabled, the app data is
+	// still preserved.
 	Disabled bool `json:"disabled,omitempty"`
 
 	// InstallType: The type of installation to perform.
 	//
 	// Possible values:
-	//   "INSTALL_TYPE_UNSPECIFIED" - No automatic installation is
-	// performed. Any other app policies will be applied if the user
-	// installs the app.
+	//   "INSTALL_TYPE_UNSPECIFIED" - Unspecified. Defaults to AVAILABLE.
 	//   "PREINSTALLED" - The app is automatically installed and can be
 	// removed by the user.
 	//   "FORCE_INSTALLED" - The app is automatically installed and can't be
 	// removed by the user.
+	//   "AVAILABLE" - The app is available to install.
 	InstallType string `json:"installType,omitempty"`
 
 	// LockTaskAllowed: Whether the app is allowed to lock itself in
@@ -691,6 +690,10 @@ type ComplianceRule struct {
 	// exists any matching NonComplianceDetail for the device.
 	NonComplianceDetailCondition *NonComplianceDetailCondition `json:"nonComplianceDetailCondition,omitempty"`
 
+	// PackageNamesToDisable: If set, the rule includes a mitigating action
+	// to disable apps specified in the list, but app data is preserved.
+	PackageNamesToDisable []string `json:"packageNamesToDisable,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g. "ApiLevelCondition")
 	// to unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
@@ -784,7 +787,10 @@ type Device struct {
 	HardwareStatusSamples []*HardwareStatus `json:"hardwareStatusSamples,omitempty"`
 
 	// LastPolicyComplianceReportTime: The last time the device sent a
-	// policy compliance report.
+	// policy compliance report. Important: This field is deprecated. The
+	// timestamp will be on last_status_report_time field, and
+	// last_status_report_time will be used for both status report and
+	// compliance report.
 	LastPolicyComplianceReportTime string `json:"lastPolicyComplianceReportTime,omitempty"`
 
 	// LastPolicySyncTime: The last time the device fetched its policy.
@@ -792,6 +798,18 @@ type Device struct {
 
 	// LastStatusReportTime: The last time the device sent a status report.
 	LastStatusReportTime string `json:"lastStatusReportTime,omitempty"`
+
+	// ManagementMode: The type of management mode Android Device Policy
+	// takes on the device. This influences which policy settings are
+	// supported.
+	//
+	// Possible values:
+	//   "MANAGEMENT_MODE_UNSPECIFIED" - This value is disallowed.
+	//   "DEVICE_OWNER" - Device owner. Android Device Policy has full
+	// control over the device.
+	//   "PROFILE_OWNER" - Profile owner. Android Device Policy has control
+	// over a managed profile on the device.
+	ManagementMode string `json:"managementMode,omitempty"`
 
 	// MemoryEvents: Events related to memory and storage measurements in
 	// chronological order. This information is only available if
@@ -1050,6 +1068,11 @@ type EnrollmentToken struct {
 	// enterprises/{enterpriseId}/enrollmentTokens/{enrollmentTokenId}.
 	Name string `json:"name,omitempty"`
 
+	// OneTimeOnly: Whether the enrollment token is for one time use only.
+	// If the flag is set to true, only one device can use it for
+	// registration.
+	OneTimeOnly bool `json:"oneTimeOnly,omitempty"`
+
 	// PolicyName: The name of the policy initially applied to the enrolled
 	// device, in the form enterprises/{enterpriseId}/policies/{policyId}.
 	// If not specified, the policy_name for the device’s user is applied.
@@ -1110,7 +1133,8 @@ type Enterprise struct {
 	//   "NOTIFICATION_TYPE_UNSPECIFIED" - This value is ignored.
 	//   "ENROLLMENT" - A notification sent when a device enrolls.
 	//   "COMPLIANCE_REPORT" - A notification sent when a device issues a
-	// policy compliance report.
+	// policy compliance report. Important: This enum value is deprecated.
+	// The notification will be sent as STATUS_REPORT.
 	//   "STATUS_REPORT" - A notification sent when a device issues a status
 	// report.
 	//   "COMMAND" - A notification sent when a device command has
@@ -1718,7 +1742,8 @@ type NonComplianceDetail struct {
 	//   "NO_LICENSES_REMAINING" - There are no licenses available to assign
 	// to the user.
 	//   "NOT_ENROLLED" - The enterprise is no longer enrolled with managed
-	// Play or Android Device Policy is not enabled for the enterprise.
+	// Play or the admin has not accepted the latest managed Play terms of
+	// service.
 	//   "USER_INVALID" - The user is no longer valid. The user may have
 	// been deleted or disabled.
 	InstallationFailureReason string `json:"installationFailureReason,omitempty"`
@@ -2037,8 +2062,9 @@ func (s *PasswordRequirements) MarshalJSON() ([]byte, error) {
 // PermissionGrant: Configuration for an Android permission and its
 // grant state.
 type PermissionGrant struct {
-	// Permission: The android permission, e.g.
-	// android.permission.READ_CALENDAR.
+	// Permission: The Android permission or group, e.g.
+	// android.permission.READ_CALENDAR or
+	// android.permission_group.CALENDAR.
 	Permission string `json:"permission,omitempty"`
 
 	// Policy: The policy for granting the permission.
@@ -2374,6 +2400,10 @@ type Policy struct {
 	// PasswordRequirements: Password requirements.
 	PasswordRequirements *PasswordRequirements `json:"passwordRequirements,omitempty"`
 
+	// PermissionGrants: Explicit permission or group grants or denials for
+	// all apps. These values override the default_permission_policy.
+	PermissionGrants []*PermissionGrant `json:"permissionGrants,omitempty"`
+
 	// PermittedInputMethods: If present, only the input methods provided by
 	// packages in this list are permitted. If this field is present, but
 	// the list is empty, then only system input methods are permitted.
@@ -2686,6 +2716,10 @@ type SoftwareInfo struct {
 
 	// DeviceKernelVersion: Kernel version, for example, 2.6.32.9-g103d848.
 	DeviceKernelVersion string `json:"deviceKernelVersion,omitempty"`
+
+	// PrimaryLanguageCode: An IETF BCP 47 language code for the primary
+	// locale on the device.
+	PrimaryLanguageCode string `json:"primaryLanguageCode,omitempty"`
 
 	// SecurityPatchLevel: Security patch level, e.g. 2016-05-01.
 	SecurityPatchLevel string `json:"securityPatchLevel,omitempty"`
@@ -3639,6 +3673,18 @@ func (r *EnterprisesDevicesService) Delete(name string) *EnterprisesDevicesDelet
 	return c
 }
 
+// WipeDataFlags sets the optional parameter "wipeDataFlags": Optional
+// flags that control the device wiping behavior.
+//
+// Possible values:
+//   "WIPE_DATA_FLAG_UNSPECIFIED"
+//   "PRESERVE_RESET_PROTECTION_DATA"
+//   "WIPE_EXTERNAL_STORAGE"
+func (c *EnterprisesDevicesDeleteCall) WipeDataFlags(wipeDataFlags ...string) *EnterprisesDevicesDeleteCall {
+	c.urlParams_.SetMulti("wipeDataFlags", append([]string{}, wipeDataFlags...))
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
 // https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
@@ -3733,6 +3779,17 @@ func (c *EnterprisesDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*Empty,
 	//       "location": "path",
 	//       "pattern": "^enterprises/[^/]+/devices/[^/]+$",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "wipeDataFlags": {
+	//       "description": "Optional flags that control the device wiping behavior.",
+	//       "enum": [
+	//         "WIPE_DATA_FLAG_UNSPECIFIED",
+	//         "PRESERVE_RESET_PROTECTION_DATA",
+	//         "WIPE_EXTERNAL_STORAGE"
+	//       ],
+	//       "location": "query",
+	//       "repeated": true,
 	//       "type": "string"
 	//     }
 	//   },

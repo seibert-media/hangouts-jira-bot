@@ -714,9 +714,9 @@ func (s *BatchUpdateIngressRulesResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// BuildInfo: Google Cloud Container Builder build information.
+// BuildInfo: Google Cloud Build information.
 type BuildInfo struct {
-	// CloudBuildId: The Google Cloud Container Builder build id. Example:
+	// CloudBuildId: The Google Cloud Build id. Example:
 	// "f966068f-08b2-42c8-bdfe-74137dff2bf9"
 	CloudBuildId string `json:"cloudBuildId,omitempty"`
 
@@ -1097,17 +1097,16 @@ func (s *DebugInstanceRequest) MarshalJSON() ([]byte, error) {
 // Deployment: Code and application artifacts used to deploy a version
 // to App Engine.
 type Deployment struct {
-	// Build: Google Cloud Container Builder build information. Only
-	// applicable for instances running in the App Engine flexible
-	// environment.
+	// Build: Google Cloud Build build information. Only applicable for
+	// instances running in the App Engine flexible environment.
 	Build *BuildInfo `json:"build,omitempty"`
 
-	// CloudBuildOptions: Options for any Google Cloud Container Builder
-	// builds created as a part of this deployment.Note that this is
-	// orthogonal to the build parameter, where the deployment depends on an
-	// already existing cloud build. These options will only be used if a
-	// new build is created, such as when deploying to the App Engine
-	// flexible environment using files or zip.
+	// CloudBuildOptions: Options for any Google Cloud Build builds created
+	// as a part of this deployment.Note that this is orthogonal to the
+	// build parameter, where the deployment depends on an already existing
+	// cloud build. These options will only be used if a new build is
+	// created, such as when deploying to the App Engine flexible
+	// environment using files or zip.
 	CloudBuildOptions *CloudBuildOptions `json:"cloudBuildOptions,omitempty"`
 
 	// Container: The Docker image for the container that runs the version.
@@ -1264,9 +1263,13 @@ type EndpointsApiService struct {
 	// configuration ID. The config_id field is used to give the
 	// configuration ID and is required in this case.Endpoints also has a
 	// rollout strategy called RolloutStrategy.MANAGED. When using this,
-	// Endpoints fetches the latest configuration and does not need to be
-	// told the configuration ID. In this case, config_id must be omitted.
+	// Endpoints fetches the latest configuration and does not need the
+	// configuration ID. In this case, config_id must be omitted.
 	ConfigId string `json:"configId,omitempty"`
+
+	// DisableTraceSampling: Enable or disable trace sampling. By default,
+	// this is set to false for enabled.
+	DisableTraceSampling bool `json:"disableTraceSampling,omitempty"`
 
 	// Name: Endpoints service name which is the name of the "service"
 	// resource in the Service Management API. For example
@@ -1303,6 +1306,35 @@ type EndpointsApiService struct {
 
 func (s *EndpointsApiService) MarshalJSON() ([]byte, error) {
 	type NoMethod EndpointsApiService
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Entrypoint: The entrypoint for the application.
+type Entrypoint struct {
+	// Shell: The format should be a shell command that can be fed to bash
+	// -c.
+	Shell string `json:"shell,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Shell") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Shell") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Entrypoint) MarshalJSON() ([]byte, error) {
+	type NoMethod Entrypoint
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -1554,6 +1586,10 @@ type IdentityAwareProxy struct {
 
 	// Oauth2ClientId: OAuth2 client ID to use for the authentication flow.
 	Oauth2ClientId string `json:"oauth2ClientId,omitempty"`
+
+	// Oauth2ClientInfo: InputOnly OAuth client info required to generate
+	// client id to be used for IAP.
+	Oauth2ClientInfo *OAuth2ClientInfo `json:"oauth2ClientInfo,omitempty"`
 
 	// Oauth2ClientSecret: OAuth2 client secret to use for the
 	// authentication flow.For security reasons, this value cannot be
@@ -2398,6 +2434,42 @@ type NetworkUtilization struct {
 
 func (s *NetworkUtilization) MarshalJSON() ([]byte, error) {
 	type NoMethod NetworkUtilization
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type OAuth2ClientInfo struct {
+	// ApplicationName: Application name to be used in OAuth consent screen.
+	ApplicationName string `json:"applicationName,omitempty"`
+
+	// ClientName: Nameof the client to be generated. Optional - If not
+	// provided, the name will be autogenerated by the backend.
+	ClientName string `json:"clientName,omitempty"`
+
+	// DeveloperEmailAddress: Developer's information to be used in OAuth
+	// consent screen.
+	DeveloperEmailAddress string `json:"developerEmailAddress,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ApplicationName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ApplicationName") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *OAuth2ClientInfo) MarshalJSON() ([]byte, error) {
+	type NoMethod OAuth2ClientInfo
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -3352,7 +3424,8 @@ type UrlMap struct {
 	// status code and an error message.
 	AuthFailAction string `json:"authFailAction,omitempty"`
 
-	// Login: Level of login required to access this resource.
+	// Login: Level of login required to access this resource. Not supported
+	// for Node.js in the App Engine standard environment.
 	//
 	// Possible values:
 	//   "LOGIN_UNSPECIFIED" - Not specified. LOGIN_OPTIONAL is assumed.
@@ -3378,8 +3451,9 @@ type UrlMap struct {
 	//   "REDIRECT_HTTP_RESPONSE_CODE_307" - 307 Temporary Redirect code.
 	RedirectHttpResponseCode string `json:"redirectHttpResponseCode,omitempty"`
 
-	// Script: Executes a script to handle the request that matches this URL
-	// pattern.
+	// Script: Executes a script to handle the requests that match this URL
+	// pattern. Only the auto value is supported for Node.js in the App
+	// Engine standard environment, for example "script": "auto".
 	Script *ScriptHandler `json:"script,omitempty"`
 
 	// SecurityLevel: Security (HTTPS) enforcement for this URL.
@@ -3486,6 +3560,9 @@ type Version struct {
 	// endpoints_api_service is set, the Cloud Endpoints Extensible Service
 	// Proxy will be provided to serve the API implemented by the app.
 	EndpointsApiService *EndpointsApiService `json:"endpointsApiService,omitempty"`
+
+	// Entrypoint: The entrypoint for the application.
+	Entrypoint *Entrypoint `json:"entrypoint,omitempty"`
 
 	// Env: App Engine execution environment for this version.Defaults to
 	// standard.

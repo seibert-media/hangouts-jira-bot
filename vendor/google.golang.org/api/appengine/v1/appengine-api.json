@@ -64,11 +64,6 @@
       "location": "query",
       "type": "string"
     },
-    "bearer_token": {
-      "description": "OAuth bearer token.",
-      "location": "query",
-      "type": "string"
-    },
     "callback": {
       "description": "JSONP",
       "location": "query",
@@ -88,12 +83,6 @@
       "description": "OAuth 2.0 token for the current user.",
       "location": "query",
       "type": "string"
-    },
-    "pp": {
-      "default": "true",
-      "description": "Pretty-print response.",
-      "location": "query",
-      "type": "boolean"
     },
     "prettyPrint": {
       "default": "true",
@@ -1583,7 +1572,7 @@
       }
     }
   },
-  "revision": "20180525",
+  "revision": "20180726",
   "rootUrl": "https://appengine.googleapis.com/",
   "schemas": {
     "ApiConfigHandler": {
@@ -2021,7 +2010,7 @@
       "properties": {
         "cloudBuildOptions": {
           "$ref": "CloudBuildOptions",
-          "description": "Options for any Google Cloud Container Builder builds created as a part of this deployment.Note that this is orthogonal to the build parameter, where the deployment depends on an already existing cloud build. These options will only be used if a new build is created, such as when deploying to the App Engine flexible environment using files or zip."
+          "description": "Options for any Google Cloud Build builds created as a part of this deployment.Note that this is orthogonal to the build parameter, where the deployment depends on an already existing cloud build. These options will only be used if a new build is created, such as when deploying to the App Engine flexible environment using files or zip."
         },
         "container": {
           "$ref": "ContainerInfo",
@@ -2110,6 +2099,31 @@
         },
         "name": {
           "description": "Endpoints service name which is the name of the \"service\" resource in the Service Management API. For example \"myapi.endpoints.myproject.cloud.goog\"",
+          "type": "string"
+        },
+        "rolloutStrategy": {
+          "description": "Endpoints rollout strategy. If FIXED, config_id must be specified. If MANAGED, config_id must be omitted.",
+          "enum": [
+            "UNSPECIFIED_ROLLOUT_STRATEGY",
+            "FIXED",
+            "MANAGED"
+          ],
+          "enumDescriptions": [
+            "Not specified. Defaults to FIXED.",
+            "Endpoints service configuration ID will be fixed to the configuration ID specified by config_id.",
+            "Endpoints service configuration ID will be updated with each rollout."
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Entrypoint": {
+      "description": "The entrypoint for the application.",
+      "id": "Entrypoint",
+      "properties": {
+        "shell": {
+          "description": "The format should be a shell command that can be fed to bash -c.",
           "type": "string"
         }
       },
@@ -3301,7 +3315,7 @@
           "type": "string"
         },
         "login": {
-          "description": "Level of login required to access this resource.",
+          "description": "Level of login required to access this resource. Not supported for Node.js in the App Engine standard environment.",
           "enum": [
             "LOGIN_UNSPECIFIED",
             "LOGIN_OPTIONAL",
@@ -3336,7 +3350,7 @@
         },
         "script": {
           "$ref": "ScriptHandler",
-          "description": "Executes a script to handle the request that matches this URL pattern."
+          "description": "Executes a script to handle the requests that match this URL pattern. Only the auto value is supported for Node.js in the App Engine standard environment, for example \"script\": \"auto\"."
         },
         "securityLevel": {
           "description": "Security (HTTPS) enforcement for this URL.",
@@ -3416,6 +3430,10 @@
         "endpointsApiService": {
           "$ref": "EndpointsApiService",
           "description": "Cloud Endpoints configuration.If endpoints_api_service is set, the Cloud Endpoints Extensible Service Proxy will be provided to serve the API implemented by the app."
+        },
+        "entrypoint": {
+          "$ref": "Entrypoint",
+          "description": "The entrypoint for the application."
         },
         "env": {
           "description": "App Engine execution environment for this version.Defaults to standard.",

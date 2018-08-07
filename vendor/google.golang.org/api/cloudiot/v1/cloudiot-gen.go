@@ -197,6 +197,15 @@ type ProjectsLocationsRegistriesGroupsDevicesStatesService struct {
 
 // Binding: Associates `members` with a `role`.
 type Binding struct {
+	// Condition: Unimplemented. The condition that is associated with this
+	// binding.
+	// NOTE: an unsatisfied condition will not allow user access via
+	// current
+	// binding. Different bindings, including their conditions, are
+	// examined
+	// independently.
+	Condition *Expr `json:"condition,omitempty"`
+
 	// Members: Specifies the identities requesting access for a Cloud
 	// Platform resource.
 	// `members` can have the following values:
@@ -233,12 +242,10 @@ type Binding struct {
 	Members []string `json:"members,omitempty"`
 
 	// Role: Role that is assigned to `members`.
-	// For example, `roles/viewer`, `roles/editor`, or
-	// `roles/owner`.
-	// Required
+	// For example, `roles/viewer`, `roles/editor`, or `roles/owner`.
 	Role string `json:"role,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Members") to
+	// ForceSendFields is a list of field names (e.g. "Condition") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
@@ -246,7 +253,7 @@ type Binding struct {
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Members") to include in
+	// NullFields is a list of field names (e.g. "Condition") to include in
 	// API requests with the JSON null value. By default, fields with empty
 	// values are omitted from API requests. However, any field with an
 	// empty value appearing in NullFields will be sent to the server as
@@ -730,6 +737,60 @@ type EventNotificationConfig struct {
 
 func (s *EventNotificationConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod EventNotificationConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Expr: Represents an expression text. Example:
+//
+//     title: "User account presence"
+//     description: "Determines whether the request has a user account"
+//     expression: "size(request.user) > 0"
+type Expr struct {
+	// Description: An optional description of the expression. This is a
+	// longer text which
+	// describes the expression, e.g. when hovered over it in a UI.
+	Description string `json:"description,omitempty"`
+
+	// Expression: Textual representation of an expression in
+	// Common Expression Language syntax.
+	//
+	// The application context of the containing message determines
+	// which
+	// well-known feature set of CEL is supported.
+	Expression string `json:"expression,omitempty"`
+
+	// Location: An optional string indicating the location of the
+	// expression for error
+	// reporting, e.g. a file name and a position in the file.
+	Location string `json:"location,omitempty"`
+
+	// Title: An optional title for the expression, i.e. a short string
+	// describing
+	// its purpose. This can be used e.g. in UIs which allow to enter
+	// the
+	// expression.
+	Title string `json:"title,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Description") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Expr) MarshalJSON() ([]byte, error) {
+	type NoMethod Expr
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -4399,132 +4460,6 @@ func (c *ProjectsLocationsRegistriesGroupsTestIamPermissionsCall) Do(opts ...goo
 
 }
 
-// method id "cloudiot.projects.locations.registries.groups.devices.delete":
-
-type ProjectsLocationsRegistriesGroupsDevicesDeleteCall struct {
-	s          *Service
-	name       string
-	urlParams_ gensupport.URLParams
-	ctx_       context.Context
-	header_    http.Header
-}
-
-// Delete: Deletes a device.
-func (r *ProjectsLocationsRegistriesGroupsDevicesService) Delete(name string) *ProjectsLocationsRegistriesGroupsDevicesDeleteCall {
-	c := &ProjectsLocationsRegistriesGroupsDevicesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
-	c.name = name
-	return c
-}
-
-// Fields allows partial responses to be retrieved. See
-// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
-// for more information.
-func (c *ProjectsLocationsRegistriesGroupsDevicesDeleteCall) Fields(s ...googleapi.Field) *ProjectsLocationsRegistriesGroupsDevicesDeleteCall {
-	c.urlParams_.Set("fields", googleapi.CombineFields(s))
-	return c
-}
-
-// Context sets the context to be used in this call's Do method. Any
-// pending HTTP request will be aborted if the provided context is
-// canceled.
-func (c *ProjectsLocationsRegistriesGroupsDevicesDeleteCall) Context(ctx context.Context) *ProjectsLocationsRegistriesGroupsDevicesDeleteCall {
-	c.ctx_ = ctx
-	return c
-}
-
-// Header returns an http.Header that can be modified by the caller to
-// add HTTP headers to the request.
-func (c *ProjectsLocationsRegistriesGroupsDevicesDeleteCall) Header() http.Header {
-	if c.header_ == nil {
-		c.header_ = make(http.Header)
-	}
-	return c.header_
-}
-
-func (c *ProjectsLocationsRegistriesGroupsDevicesDeleteCall) doRequest(alt string) (*http.Response, error) {
-	reqHeaders := make(http.Header)
-	for k, v := range c.header_ {
-		reqHeaders[k] = v
-	}
-	reqHeaders.Set("User-Agent", c.s.userAgent())
-	var body io.Reader = nil
-	c.urlParams_.Set("alt", alt)
-	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+name}")
-	urls += "?" + c.urlParams_.Encode()
-	req, _ := http.NewRequest("DELETE", urls, body)
-	req.Header = reqHeaders
-	googleapi.Expand(req.URL, map[string]string{
-		"name": c.name,
-	})
-	return gensupport.SendRequest(c.ctx_, c.s.client, req)
-}
-
-// Do executes the "cloudiot.projects.locations.registries.groups.devices.delete" call.
-// Exactly one of *Empty or error will be non-nil. Any non-2xx status
-// code is an error. Response headers are in either
-// *Empty.ServerResponse.Header or (if a response was returned at all)
-// in error.(*googleapi.Error).Header. Use googleapi.IsNotModified to
-// check whether the returned error was because http.StatusNotModified
-// was returned.
-func (c *ProjectsLocationsRegistriesGroupsDevicesDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("json")
-	if res != nil && res.StatusCode == http.StatusNotModified {
-		if res.Body != nil {
-			res.Body.Close()
-		}
-		return nil, &googleapi.Error{
-			Code:   res.StatusCode,
-			Header: res.Header,
-		}
-	}
-	if err != nil {
-		return nil, err
-	}
-	defer googleapi.CloseBody(res)
-	if err := googleapi.CheckResponse(res); err != nil {
-		return nil, err
-	}
-	ret := &Empty{
-		ServerResponse: googleapi.ServerResponse{
-			Header:         res.Header,
-			HTTPStatusCode: res.StatusCode,
-		},
-	}
-	target := &ret
-	if err := gensupport.DecodeResponse(target, res); err != nil {
-		return nil, err
-	}
-	return ret, nil
-	// {
-	//   "description": "Deletes a device.",
-	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/groups/{groupsId}/devices/{devicesId}",
-	//   "httpMethod": "DELETE",
-	//   "id": "cloudiot.projects.locations.registries.groups.devices.delete",
-	//   "parameterOrder": [
-	//     "name"
-	//   ],
-	//   "parameters": {
-	//     "name": {
-	//       "description": "The name of the device. For example,\n`projects/p0/locations/us-central1/registries/registry0/devices/device0` or\n`projects/p0/locations/us-central1/registries/registry0/devices/{num_id}`.",
-	//       "location": "path",
-	//       "pattern": "^projects/[^/]+/locations/[^/]+/registries/[^/]+/groups/[^/]+/devices/[^/]+$",
-	//       "required": true,
-	//       "type": "string"
-	//     }
-	//   },
-	//   "path": "v1/{+name}",
-	//   "response": {
-	//     "$ref": "Empty"
-	//   },
-	//   "scopes": [
-	//     "https://www.googleapis.com/auth/cloud-platform",
-	//     "https://www.googleapis.com/auth/cloudiot"
-	//   ]
-	// }
-
-}
-
 // method id "cloudiot.projects.locations.registries.groups.devices.get":
 
 type ProjectsLocationsRegistriesGroupsDevicesGetCall struct {
@@ -4677,6 +4612,250 @@ func (c *ProjectsLocationsRegistriesGroupsDevicesGetCall) Do(opts ...googleapi.C
 	//   ]
 	// }
 
+}
+
+// method id "cloudiot.projects.locations.registries.groups.devices.list":
+
+type ProjectsLocationsRegistriesGroupsDevicesListCall struct {
+	s            *Service
+	parent       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: List devices in a device registry.
+func (r *ProjectsLocationsRegistriesGroupsDevicesService) List(parent string) *ProjectsLocationsRegistriesGroupsDevicesListCall {
+	c := &ProjectsLocationsRegistriesGroupsDevicesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.parent = parent
+	return c
+}
+
+// DeviceIds sets the optional parameter "deviceIds": A list of device
+// string identifiers. If empty, it will ignore this field.
+// For example, `['device0', 'device12']`. This field cannot hold more
+// than
+// 10,000 entries.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) DeviceIds(deviceIds ...string) *ProjectsLocationsRegistriesGroupsDevicesListCall {
+	c.urlParams_.SetMulti("deviceIds", append([]string{}, deviceIds...))
+	return c
+}
+
+// DeviceNumIds sets the optional parameter "deviceNumIds": A list of
+// device numerical ids. If empty, it will ignore this field. This
+// field cannot hold more than 10,000 entries.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) DeviceNumIds(deviceNumIds ...uint64) *ProjectsLocationsRegistriesGroupsDevicesListCall {
+	var deviceNumIds_ []string
+	for _, v := range deviceNumIds {
+		deviceNumIds_ = append(deviceNumIds_, fmt.Sprint(v))
+	}
+	c.urlParams_.SetMulti("deviceNumIds", deviceNumIds_)
+	return c
+}
+
+// FieldMask sets the optional parameter "fieldMask": The fields of the
+// `Device` resource to be returned in the response. The
+// fields `id`, and `num_id` are always returned by default, along with
+// any
+// other fields specified.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) FieldMask(fieldMask string) *ProjectsLocationsRegistriesGroupsDevicesListCall {
+	c.urlParams_.Set("fieldMask", fieldMask)
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The maximum number
+// of devices to return in the response. If this value
+// is zero, the service will select a default size. A call may return
+// fewer
+// objects than requested, but if there is a non-empty `page_token`,
+// it
+// indicates that more entries are available.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) PageSize(pageSize int64) *ProjectsLocationsRegistriesGroupsDevicesListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": The value returned
+// by the last `ListDevicesResponse`; indicates
+// that this is a continuation of a prior `ListDevices` call, and
+// that the system should return the next page of data.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) PageToken(pageToken string) *ProjectsLocationsRegistriesGroupsDevicesListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) Fields(s ...googleapi.Field) *ProjectsLocationsRegistriesGroupsDevicesListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) IfNoneMatch(entityTag string) *ProjectsLocationsRegistriesGroupsDevicesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) Context(ctx context.Context) *ProjectsLocationsRegistriesGroupsDevicesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1/{+parent}/devices")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"parent": c.parent,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "cloudiot.projects.locations.registries.groups.devices.list" call.
+// Exactly one of *ListDevicesResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *ListDevicesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) Do(opts ...googleapi.CallOption) (*ListDevicesResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &ListDevicesResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "List devices in a device registry.",
+	//   "flatPath": "v1/projects/{projectsId}/locations/{locationsId}/registries/{registriesId}/groups/{groupsId}/devices",
+	//   "httpMethod": "GET",
+	//   "id": "cloudiot.projects.locations.registries.groups.devices.list",
+	//   "parameterOrder": [
+	//     "parent"
+	//   ],
+	//   "parameters": {
+	//     "deviceIds": {
+	//       "description": "A list of device string identifiers. If empty, it will ignore this field.\nFor example, `['device0', 'device12']`. This field cannot hold more than\n10,000 entries.",
+	//       "location": "query",
+	//       "repeated": true,
+	//       "type": "string"
+	//     },
+	//     "deviceNumIds": {
+	//       "description": "A list of device numerical ids. If empty, it will ignore this field. This\nfield cannot hold more than 10,000 entries.",
+	//       "format": "uint64",
+	//       "location": "query",
+	//       "repeated": true,
+	//       "type": "string"
+	//     },
+	//     "fieldMask": {
+	//       "description": "The fields of the `Device` resource to be returned in the response. The\nfields `id`, and `num_id` are always returned by default, along with any\nother fields specified.",
+	//       "format": "google-fieldmask",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "pageSize": {
+	//       "description": "The maximum number of devices to return in the response. If this value\nis zero, the service will select a default size. A call may return fewer\nobjects than requested, but if there is a non-empty `page_token`, it\nindicates that more entries are available.",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "The value returned by the last `ListDevicesResponse`; indicates\nthat this is a continuation of a prior `ListDevices` call, and\nthat the system should return the next page of data.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "parent": {
+	//       "description": "The device registry path. Required. For example,\n`projects/my-project/locations/us-central1/registries/my-registry`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+/locations/[^/]+/registries/[^/]+/groups/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1/{+parent}/devices",
+	//   "response": {
+	//     "$ref": "ListDevicesResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/cloudiot"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsLocationsRegistriesGroupsDevicesListCall) Pages(ctx context.Context, f func(*ListDevicesResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
 }
 
 // method id "cloudiot.projects.locations.registries.groups.devices.modifyCloudToDeviceConfig":

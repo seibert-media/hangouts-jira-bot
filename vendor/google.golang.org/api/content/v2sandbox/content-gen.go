@@ -109,10 +109,10 @@ type OrdersService struct {
 }
 
 type Amount struct {
-	// Pretax: Value before taxes.
+	// Pretax: [required] Value before taxes.
 	Pretax *Price `json:"pretax,omitempty"`
 
-	// Tax: Tax value.
+	// Tax: [required] Tax value.
 	Tax *Price `json:"tax,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Pretax") to
@@ -211,25 +211,25 @@ type InvoiceSummary struct {
 	// additional charges.
 	AdditionalChargeSummaries []*InvoiceSummaryAdditionalChargeSummary `json:"additionalChargeSummaries,omitempty"`
 
-	// CustomerBalance: Customer balance on this invoice. A positive amount
-	// means the customer is paying, a negative one means the customer is
-	// receiving money. Note that it must always be true that
-	// merchant_balance + customer_balance + google_balance = 0.
+	// CustomerBalance: [required] Customer balance on this invoice. A
+	// positive amount means the customer is paying, a negative one means
+	// the customer is receiving money. Note: the sum of merchant_balance,
+	// customer_balance and google_balance must always be zero.
 	CustomerBalance *Amount `json:"customerBalance,omitempty"`
 
-	// GoogleBalance: Google balance on this invoice. A positive amount
-	// means Google is paying, a negative one means Google is receiving
-	// money. Note that it must always be true that merchant_balance +
-	// customer_balance + google_balance = 0.
+	// GoogleBalance: [required] Google balance on this invoice. A positive
+	// amount means Google is paying, a negative one means Google is
+	// receiving money. Note: the sum of merchant_balance, customer_balance
+	// and google_balance must always be zero.
 	GoogleBalance *Amount `json:"googleBalance,omitempty"`
 
-	// MerchantBalance: Merchant balance on this invoice. A positive amount
-	// means the merchant is paying, a negative one means the merchant is
-	// receiving money. Note that it must always be true that
-	// merchant_balance + customer_balance + google_balance = 0.
+	// MerchantBalance: [required] Merchant balance on this invoice. A
+	// positive amount means the merchant is paying, a negative one means
+	// the merchant is receiving money. Note: the sum of merchant_balance,
+	// customer_balance and google_balance must always be zero.
 	MerchantBalance *Amount `json:"merchantBalance,omitempty"`
 
-	// ProductTotal: Total price for the product.
+	// ProductTotal: [required] Total price for the product.
 	ProductTotal *Amount `json:"productTotal,omitempty"`
 
 	// PromotionSummaries: Summary for each promotion.
@@ -261,10 +261,10 @@ func (s *InvoiceSummary) MarshalJSON() ([]byte, error) {
 }
 
 type InvoiceSummaryAdditionalChargeSummary struct {
-	// TotalAmount: Total additional charge for this type.
+	// TotalAmount: [required] Total additional charge for this type.
 	TotalAmount *Amount `json:"totalAmount,omitempty"`
 
-	// Type: Type of the additional charge.
+	// Type: [required] Type of the additional charge.
 	Type string `json:"type,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "TotalAmount") to
@@ -407,8 +407,9 @@ type OrderAddress struct {
 	// RecipientName: Name of the recipient.
 	RecipientName string `json:"recipientName,omitempty"`
 
-	// Region: Top-level administrative subdivision of the country (e.g.
-	// "CA").
+	// Region: Top-level administrative subdivision of the country. For
+	// example, a state like California ("CA") or a province like Quebec
+	// ("QC").
 	Region string `json:"region,omitempty"`
 
 	// StreetAddress: Street-level part of the address.
@@ -1157,7 +1158,7 @@ type OrderShipment struct {
 	CreationDate string `json:"creationDate,omitempty"`
 
 	// DeliveryDate: Date on which the shipment has been delivered, in ISO
-	// 8601 format. Present only if status is delievered
+	// 8601 format. Present only if status is delivered
 	DeliveryDate string `json:"deliveryDate,omitempty"`
 
 	// Id: The id of the shipment.
@@ -1231,20 +1232,20 @@ func (s *OrderShipmentLineItemShipment) MarshalJSON() ([]byte, error) {
 }
 
 type OrderinvoicesCreateChargeInvoiceRequest struct {
-	// InvoiceId: The ID of the invoice.
+	// InvoiceId: [required] The ID of the invoice.
 	InvoiceId string `json:"invoiceId,omitempty"`
 
-	// InvoiceSummary: Invoice summary.
+	// InvoiceSummary: [required] Invoice summary.
 	InvoiceSummary *InvoiceSummary `json:"invoiceSummary,omitempty"`
 
-	// LineItemInvoices: Invoice details per line item.
+	// LineItemInvoices: [required] Invoice details per line item.
 	LineItemInvoices []*ShipmentInvoiceLineItemInvoice `json:"lineItemInvoices,omitempty"`
 
-	// OperationId: The ID of the operation, unique across all operations
-	// for a given order.
+	// OperationId: [required] The ID of the operation, unique across all
+	// operations for a given order.
 	OperationId string `json:"operationId,omitempty"`
 
-	// ShipmentGroupId: ID of the shipment group.
+	// ShipmentGroupId: [required] ID of the shipment group.
 	ShipmentGroupId string `json:"shipmentGroupId,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "InvoiceId") to
@@ -1307,20 +1308,20 @@ func (s *OrderinvoicesCreateChargeInvoiceResponse) MarshalJSON() ([]byte, error)
 }
 
 type OrderinvoicesCreateRefundInvoiceRequest struct {
-	// InvoiceId: The ID of the invoice.
+	// InvoiceId: [required] The ID of the invoice.
 	InvoiceId string `json:"invoiceId,omitempty"`
 
-	// OperationId: The ID of the operation, unique across all operations
-	// for a given order.
+	// OperationId: [required] The ID of the operation, unique across all
+	// operations for a given order.
 	OperationId string `json:"operationId,omitempty"`
 
 	// RefundOnlyOption: Option to create a refund-only invoice. Exactly one
-	// of refund_option and return_option must be provided.
+	// of refundOnlyOption or returnOption must be provided.
 	RefundOnlyOption *OrderinvoicesCustomBatchRequestEntryCreateRefundInvoiceRefundOption `json:"refundOnlyOption,omitempty"`
 
 	// ReturnOption: Option to create an invoice for a refund and mark all
-	// items within the invoice as returned. Exactly one of refund_option
-	// and return_option must be provided.
+	// items within the invoice as returned. Exactly one of refundOnlyOption
+	// or returnOption must be provided.
 	ReturnOption *OrderinvoicesCustomBatchRequestEntryCreateRefundInvoiceReturnOption `json:"returnOption,omitempty"`
 
 	// ShipmentInvoices: Invoice details for different shipment groups.
@@ -1389,7 +1390,7 @@ type OrderinvoicesCustomBatchRequestEntryCreateRefundInvoiceRefundOption struct 
 	// Description: Optional description of the refund reason.
 	Description string `json:"description,omitempty"`
 
-	// Reason: Reason for the refund.
+	// Reason: [required] Reason for the refund.
 	Reason string `json:"reason,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Description") to
@@ -1419,7 +1420,7 @@ type OrderinvoicesCustomBatchRequestEntryCreateRefundInvoiceReturnOption struct 
 	// Description: Optional description of the return reason.
 	Description string `json:"description,omitempty"`
 
-	// Reason: Reason for the return.
+	// Reason: [required] Reason for the return.
 	Reason string `json:"reason,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Description") to
@@ -1804,10 +1805,7 @@ func (s *OrdersAdvanceTestOrderResponse) MarshalJSON() ([]byte, error) {
 }
 
 type OrdersCancelLineItemRequest struct {
-	// Amount: Amount to refund for the cancelation. Optional. If not set,
-	// Google will calculate the default based on the price and tax of the
-	// items involved. The amount must not be larger than the net amount
-	// left on the order.
+	// Amount: Deprecated. Please use amountPretax and amountTax instead.
 	Amount *Price `json:"amount,omitempty"`
 
 	// AmountPretax: Amount to refund for the cancelation. Optional. If not
@@ -1971,6 +1969,16 @@ func (s *OrdersCancelResponse) MarshalJSON() ([]byte, error) {
 }
 
 type OrdersCreateTestOrderRequest struct {
+	// Country: The  CLDR territory code of the country of the test order to
+	// create. Affects the currency and addresses of orders created via
+	// template_name, or the addresses of orders created via
+	// test_order.
+	//
+	// Acceptable values are:
+	// - "US"
+	// - "FR"  Defaults to US.
+	Country string `json:"country,omitempty"`
+
 	// TemplateName: The test order template to use. Specify as an
 	// alternative to testOrder as a shortcut for retrieving a template and
 	// then creating an order using that template.
@@ -1979,7 +1987,7 @@ type OrdersCreateTestOrderRequest struct {
 	// TestOrder: The test order to create.
 	TestOrder *TestOrder `json:"testOrder,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "TemplateName") to
+	// ForceSendFields is a list of field names (e.g. "Country") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
@@ -1987,10 +1995,10 @@ type OrdersCreateTestOrderRequest struct {
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "TemplateName") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
+	// NullFields is a list of field names (e.g. "Country") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
 	// null. It is an error if a field in this list has a non-empty value.
 	// This may be used to include null fields in Patch requests.
 	NullFields []string `json:"-"`
@@ -2175,10 +2183,7 @@ func (s *OrdersCustomBatchRequestEntryCancel) MarshalJSON() ([]byte, error) {
 }
 
 type OrdersCustomBatchRequestEntryCancelLineItem struct {
-	// Amount: Amount to refund for the cancelation. Optional. If not set,
-	// Google will calculate the default based on the price and tax of the
-	// items involved. The amount must not be larger than the net amount
-	// left on the order.
+	// Amount: Deprecated. Please use amountPretax and amountTax instead.
 	Amount *Price `json:"amount,omitempty"`
 
 	// AmountPretax: Amount to refund for the cancelation. Optional. If not
@@ -2280,7 +2285,7 @@ func (s *OrdersCustomBatchRequestEntryInStoreRefundLineItem) MarshalJSON() ([]by
 }
 
 type OrdersCustomBatchRequestEntryRefund struct {
-	// Amount: The amount that is refunded.
+	// Amount: Deprecated. Please use amountPretax and amountTax instead.
 	Amount *Price `json:"amount,omitempty"`
 
 	// AmountPretax: The amount that is refunded. Either amount or
@@ -2617,6 +2622,11 @@ type OrdersCustomBatchRequestEntryUpdateShipment struct {
 	// list of acceptable values.
 	Carrier string `json:"carrier,omitempty"`
 
+	// DeliveryDate: Date on which the shipment has been delivered, in ISO
+	// 8601 format. Optional and can be provided only if status is
+	// delivered.
+	DeliveryDate string `json:"deliveryDate,omitempty"`
+
 	// ShipmentId: The ID of the shipment.
 	ShipmentId string `json:"shipmentId,omitempty"`
 
@@ -2691,9 +2701,10 @@ type OrdersCustomBatchResponseEntry struct {
 	// Errors: A list of errors defined if and only if the request failed.
 	Errors *Errors `json:"errors,omitempty"`
 
-	// ExecutionStatus: The status of the execution. Only defined if the
-	// method is not get or getByMerchantOrderId and if the request was
-	// successful.
+	// ExecutionStatus: The status of the execution. Only defined if
+	// - the request was successful; and
+	// - the method is not get, getByMerchantOrderId, or one of the test
+	// methods.
 	ExecutionStatus string `json:"executionStatus,omitempty"`
 
 	// Kind: Identifies what kind of resource this is. Value: the fixed
@@ -2924,7 +2935,7 @@ func (s *OrdersListResponse) MarshalJSON() ([]byte, error) {
 }
 
 type OrdersRefundRequest struct {
-	// Amount: The amount that is refunded.
+	// Amount: Deprecated. Please use amountPretax and amountTax instead.
 	Amount *Price `json:"amount,omitempty"`
 
 	// AmountPretax: The amount that is refunded. Either amount or
@@ -3575,6 +3586,11 @@ type OrdersUpdateShipmentRequest struct {
 	// list of acceptable values.
 	Carrier string `json:"carrier,omitempty"`
 
+	// DeliveryDate: Date on which the shipment has been delivered, in ISO
+	// 8601 format. Optional and can be provided only if status is
+	// delivered.
+	DeliveryDate string `json:"deliveryDate,omitempty"`
+
 	// OperationId: The ID of the operation. Unique across all operations
 	// for a given order.
 	OperationId string `json:"operationId,omitempty"`
@@ -3678,12 +3694,12 @@ func (s *Price) MarshalJSON() ([]byte, error) {
 }
 
 type Promotion struct {
-	// PromotionAmount: Amount of the promotion. The values here are the
-	// promotion applied to the unit price pretax and to the total of the
-	// tax amounts.
+	// PromotionAmount: [required] Amount of the promotion. The values here
+	// are the promotion applied to the unit price pretax and to the total
+	// of the tax amounts.
 	PromotionAmount *Amount `json:"promotionAmount,omitempty"`
 
-	// PromotionId: ID of the promotion.
+	// PromotionId: [required] ID of the promotion.
 	PromotionId string `json:"promotionId,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "PromotionAmount") to
@@ -3711,13 +3727,13 @@ func (s *Promotion) MarshalJSON() ([]byte, error) {
 }
 
 type ShipmentInvoice struct {
-	// InvoiceSummary: Invoice summary.
+	// InvoiceSummary: [required] Invoice summary.
 	InvoiceSummary *InvoiceSummary `json:"invoiceSummary,omitempty"`
 
-	// LineItemInvoices: Invoice details per line item.
+	// LineItemInvoices: [required] Invoice details per line item.
 	LineItemInvoices []*ShipmentInvoiceLineItemInvoice `json:"lineItemInvoices,omitempty"`
 
-	// ShipmentGroupId: ID of the shipment group.
+	// ShipmentGroupId: [required] ID of the shipment group.
 	ShipmentGroupId string `json:"shipmentGroupId,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "InvoiceSummary") to
@@ -3753,11 +3769,11 @@ type ShipmentInvoiceLineItemInvoice struct {
 	// products service. Either lineItemId or productId must be set.
 	ProductId string `json:"productId,omitempty"`
 
-	// ShipmentUnitIds: Unit IDs to define specific units within the line
-	// item.
+	// ShipmentUnitIds: [required] Unit IDs to define specific units within
+	// the line item.
 	ShipmentUnitIds []string `json:"shipmentUnitIds,omitempty"`
 
-	// UnitInvoice: Invoice details for a single unit.
+	// UnitInvoice: [required] Invoice details for a single unit.
 	UnitInvoice *UnitInvoice `json:"unitInvoice,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "LineItemId") to
@@ -3786,6 +3802,10 @@ func (s *ShipmentInvoiceLineItemInvoice) MarshalJSON() ([]byte, error) {
 type TestOrder struct {
 	// Customer: The details of the customer who placed the order.
 	Customer *TestOrderCustomer `json:"customer,omitempty"`
+
+	// EnableOrderinvoices: Whether the orderinvoices service should support
+	// this order.
+	EnableOrderinvoices bool `json:"enableOrderinvoices,omitempty"`
 
 	// Kind: Identifies what kind of resource this is. Value: the fixed
 	// string "content#testOrder".
@@ -4068,7 +4088,7 @@ type UnitInvoice struct {
 	// Promotions: Promotions applied to a unit.
 	Promotions []*Promotion `json:"promotions,omitempty"`
 
-	// UnitPricePretax: Price of the unit, before applying taxes.
+	// UnitPricePretax: [required] Price of the unit, before applying taxes.
 	UnitPricePretax *Price `json:"unitPricePretax,omitempty"`
 
 	// UnitPriceTaxes: Tax amounts to apply to the unit price.
@@ -4099,14 +4119,14 @@ func (s *UnitInvoice) MarshalJSON() ([]byte, error) {
 }
 
 type UnitInvoiceAdditionalCharge struct {
-	// AdditionalChargeAmount: Amount of the additional charge.
+	// AdditionalChargeAmount: [required] Amount of the additional charge.
 	AdditionalChargeAmount *Amount `json:"additionalChargeAmount,omitempty"`
 
 	// AdditionalChargePromotions: Promotions applied to the additional
 	// charge.
 	AdditionalChargePromotions []*Promotion `json:"additionalChargePromotions,omitempty"`
 
-	// Type: Type of the additional charge.
+	// Type: [required] Type of the additional charge.
 	Type string `json:"type,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
@@ -4135,13 +4155,14 @@ func (s *UnitInvoiceAdditionalCharge) MarshalJSON() ([]byte, error) {
 }
 
 type UnitInvoiceTaxLine struct {
-	// TaxAmount: Tax amount for the tax type.
+	// TaxAmount: [required] Tax amount for the tax type.
 	TaxAmount *Price `json:"taxAmount,omitempty"`
 
-	// TaxName: Optional name of the tax type.
+	// TaxName: Optional name of the tax type. This should only be provided
+	// if taxType is otherFeeTax.
 	TaxName string `json:"taxName,omitempty"`
 
-	// TaxType: Type of the tax.
+	// TaxType: [required] Type of the tax.
 	TaxType string `json:"taxType,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "TaxAmount") to
@@ -6181,6 +6202,13 @@ func (r *OrdersService) Gettestordertemplate(merchantId uint64, templateName str
 	return c
 }
 
+// Country sets the optional parameter "country": The country of the
+// template to retrieve. Defaults to US.
+func (c *OrdersGettestordertemplateCall) Country(country string) *OrdersGettestordertemplateCall {
+	c.urlParams_.Set("country", country)
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
 // https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
@@ -6285,6 +6313,11 @@ func (c *OrdersGettestordertemplateCall) Do(opts ...googleapi.CallOption) (*Orde
 	//     "templateName"
 	//   ],
 	//   "parameters": {
+	//     "country": {
+	//       "description": "The country of the template to retrieve. Defaults to US.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "merchantId": {
 	//       "description": "The ID of the account that should manage the order. This cannot be a multi-client account.",
 	//       "format": "uint64",

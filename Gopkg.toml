@@ -3,10 +3,6 @@
   name = "github.com/kolide/kit"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/playnet-public/libs"
-
-[[constraint]]
   name = "go.uber.org/zap"
   version = "1.7.1"
 

@@ -66,11 +66,6 @@
       "location": "query",
       "type": "string"
     },
-    "bearer_token": {
-      "description": "OAuth bearer token.",
-      "location": "query",
-      "type": "string"
-    },
     "callback": {
       "description": "JSONP",
       "location": "query",
@@ -90,12 +85,6 @@
       "description": "OAuth 2.0 token for the current user.",
       "location": "query",
       "type": "string"
-    },
-    "pp": {
-      "default": "true",
-      "description": "Pretty-print response.",
-      "location": "query",
-      "type": "boolean"
     },
     "prettyPrint": {
       "default": "true",
@@ -452,7 +441,6 @@
                     "$ref": "Empty"
                   },
                   "scopes": [
-                    "https://www.googleapis.com/auth/bigquery",
                     "https://www.googleapis.com/auth/cloud-platform"
                   ]
                 },
@@ -832,7 +820,6 @@
                 "$ref": "Empty"
               },
               "scopes": [
-                "https://www.googleapis.com/auth/bigquery",
                 "https://www.googleapis.com/auth/cloud-platform"
               ]
             },
@@ -1156,7 +1143,7 @@
       }
     }
   },
-  "revision": "20180525",
+  "revision": "20180715",
   "rootUrl": "https://bigquerydatatransfer.googleapis.com/",
   "schemas": {
     "CheckValidCredsRequest": {
@@ -1195,7 +1182,7 @@
           "type": "string"
         },
         "clientId": {
-          "description": "Data source client id which should be used to receive refresh token.\nWhen not supplied, no offline credentials are populated for data transfer.",
+          "description": "Data source client id which should be used to receive refresh token.",
           "type": "string"
         },
         "dataRefreshType": {
@@ -1258,7 +1245,7 @@
           "type": "array"
         },
         "scopes": {
-          "description": "Api auth scopes for which refresh token needs to be obtained. Only valid\nwhen `client_id` is specified. Ignored otherwise. These are scopes needed\nby a data source to prepare data and ingest them into BigQuery,\ne.g., https://www.googleapis.com/auth/bigquery",
+          "description": "Api auth scopes for which refresh token needs to be obtained. These are\nscopes needed by a data source to prepare data and ingest them into\nBigQuery, e.g., https://www.googleapis.com/auth/bigquery",
           "items": {
             "type": "string"
           },
@@ -1729,7 +1716,7 @@
           "type": "string"
         },
         "schedule": {
-          "description": "Output only. Describes the schedule of this transfer run if it was\ncreated as part of a regular schedule. For batch transfer runs that are\nscheduled manually, this is empty.\nNOTE: the system might choose to delay the schedule depending on the\ncurrent load, so `schedule_time` doesn't always matches this.",
+          "description": "Output only. Describes the schedule of this transfer run if it was\ncreated as part of a regular schedule. For batch transfer runs that are\nscheduled manually, this is empty.\nNOTE: the system might choose to delay the schedule depending on the\ncurrent load, so `schedule_time` doesn't always match this.",
           "type": "string"
         },
         "scheduleTime": {

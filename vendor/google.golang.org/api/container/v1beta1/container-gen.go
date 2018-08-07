@@ -529,6 +529,9 @@ type Cluster struct {
 	// creation.
 	EnableKubernetesAlpha bool `json:"enableKubernetesAlpha,omitempty"`
 
+	// EnableTpu: Enable the ability to use Cloud TPUs in this cluster.
+	EnableTpu bool `json:"enableTpu,omitempty"`
+
 	// Endpoint: [Output only] The IP address of this cluster's master
 	// endpoint.
 	// The endpoint can be accessed from the internet
@@ -769,6 +772,14 @@ type Cluster struct {
 	// of
 	// the name.
 	Subnetwork string `json:"subnetwork,omitempty"`
+
+	// TpuIpv4CidrBlock: [Output only] The IP address range of the Cloud
+	// TPUs in this cluster,
+	// in
+	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+	//
+	// notation (e.g. `1.2.3.4/29`).
+	TpuIpv4CidrBlock string `json:"tpuIpv4CidrBlock,omitempty"`
 
 	// Zone: [Output only] The name of the Google Compute
 	// Engine
@@ -1038,9 +1049,8 @@ type CreateNodePoolRequest struct {
 
 	// Parent: The parent (project, location, cluster id) where the node
 	// pool will be
-	// created. Specified in the
-	// format
-	// 'projects/*/locations/*/clusters/*/nodePools/*'.
+	// created. Specified in the format
+	// 'projects/*/locations/*/clusters/*'.
 	Parent string `json:"parent,omitempty"`
 
 	// ProjectId: Deprecated. The Google Developers Console [project ID or
@@ -1344,6 +1354,29 @@ type IPAllocationPolicy struct {
 	// subnetwork.
 	SubnetworkName string `json:"subnetworkName,omitempty"`
 
+	// TpuIpv4CidrBlock: The IP address range of the Cloud TPUs in this
+	// cluster. If unspecified, a
+	// range will be automatically chosen with the default size.
+	//
+	// This field is only applicable when `use_ip_aliases` is true.
+	//
+	// If unspecified, the range will use the default size.
+	//
+	// Set to /netmask (e.g. `/14`) to have a range chosen with a
+	// specific
+	// netmask.
+	//
+	// Set to
+	// a
+	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+	//
+	// notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks
+	// (e.g.
+	// `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to pick a specific
+	// range
+	// to use.
+	TpuIpv4CidrBlock string `json:"tpuIpv4CidrBlock,omitempty"`
+
 	// UseIpAliases: Whether alias IPs will be used for pod IPs in the
 	// cluster.
 	UseIpAliases bool `json:"useIpAliases,omitempty"`
@@ -1642,7 +1675,7 @@ func (s *ListUsableSubnetworksResponse) MarshalJSON() ([]byte, error) {
 // for GKE cluster scheduling.
 type Location struct {
 	// Name: Contains the name of the resource requested.
-	// Specific in the format 'projects/*/locations/*'.
+	// Specified in the format 'projects/*/locations/*'.
 	Name string `json:"name,omitempty"`
 
 	// Recommended: Recommended is a bool combining the drain state of the
@@ -1851,6 +1884,59 @@ func (s *MasterAuthorizedNetworksConfig) MarshalJSON() ([]byte, error) {
 	type NoMethod MasterAuthorizedNetworksConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Metric: Progress metric is (string, int|float|string) pair.
+type Metric struct {
+	// DoubleValue: For metrics with floating point value.
+	DoubleValue float64 `json:"doubleValue,omitempty"`
+
+	// IntValue: For metrics with integer value.
+	IntValue int64 `json:"intValue,omitempty,string"`
+
+	// Name: Metric name, required.
+	// e.g., "nodes total", "percent done"
+	Name string `json:"name,omitempty"`
+
+	// StringValue: For metrics with custom values (ratios, visual progress,
+	// etc.).
+	StringValue string `json:"stringValue,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DoubleValue") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DoubleValue") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Metric) MarshalJSON() ([]byte, error) {
+	type NoMethod Metric
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *Metric) UnmarshalJSON(data []byte) error {
+	type NoMethod Metric
+	var s1 struct {
+		DoubleValue gensupport.JSONFloat64 `json:"doubleValue"`
+		*NoMethod
+	}
+	s1.NoMethod = (*NoMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.DoubleValue = float64(s1.DoubleValue)
+	return nil
 }
 
 // NetworkConfig: NetworkConfig reports the relative names of network &
@@ -2428,6 +2514,9 @@ type Operation struct {
 	//   "SET_MAINTENANCE_POLICY" - Set the maintenance policy.
 	OperationType string `json:"operationType,omitempty"`
 
+	// Progress: [Output only] Progress information for an operation.
+	Progress *OperationProgress `json:"progress,omitempty"`
+
 	// SelfLink: Server-defined URL for the resource.
 	SelfLink string `json:"selfLink,omitempty"`
 
@@ -2483,6 +2572,58 @@ type Operation struct {
 
 func (s *Operation) MarshalJSON() ([]byte, error) {
 	type NoMethod Operation
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// OperationProgress: Information about operation (or operation stage)
+// progress.
+type OperationProgress struct {
+	// Metrics: Progress metric bundle, for example:
+	//   metrics: [{name: "nodes done",     int_value: 15},
+	//             {name: "nodes total",    int_value: 32}]
+	// or
+	//   metrics: [{name: "progress",       double_value: 0.56},
+	//             {name: "progress scale", double_value: 1.0}]
+	Metrics []*Metric `json:"metrics,omitempty"`
+
+	// Name: A non-parameterized string describing an operation stage.
+	// Unset for single-stage operations.
+	Name string `json:"name,omitempty"`
+
+	// Stages: Substages of an operation or a stage.
+	Stages []*OperationProgress `json:"stages,omitempty"`
+
+	// Status: Status of an operation stage.
+	// Unset for single-stage operations.
+	//
+	// Possible values:
+	//   "STATUS_UNSPECIFIED" - Not set.
+	//   "PENDING" - The operation has been created.
+	//   "RUNNING" - The operation is currently running.
+	//   "DONE" - The operation is done, either cancelled or completed.
+	//   "ABORTING" - The operation is aborting.
+	Status string `json:"status,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Metrics") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Metrics") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *OperationProgress) MarshalJSON() ([]byte, error) {
+	type NoMethod OperationProgress
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -4168,7 +4309,7 @@ func (c *ProjectsLocationsListCall) Do(opts ...googleapi.CallOption) (*ListLocat
 	//   ],
 	//   "parameters": {
 	//     "parent": {
-	//       "description": "Contains the name of the resource requested.\nSpecific in the format 'projects/*/locations'.",
+	//       "description": "Contains the name of the resource requested.\nSpecified in the format 'projects/*'.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
@@ -6748,7 +6889,7 @@ func (c *ProjectsLocationsClustersNodePoolsCreateCall) Do(opts ...googleapi.Call
 	//   ],
 	//   "parameters": {
 	//     "parent": {
-	//       "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*/nodePools/*'.",
+	//       "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*'.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/clusters/[^/]+$",
 	//       "required": true,

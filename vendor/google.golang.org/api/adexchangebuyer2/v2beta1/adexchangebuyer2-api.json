@@ -59,11 +59,6 @@
       "location": "query",
       "type": "string"
     },
-    "bearer_token": {
-      "description": "OAuth bearer token.",
-      "location": "query",
-      "type": "string"
-    },
     "callback": {
       "description": "JSONP",
       "location": "query",
@@ -83,12 +78,6 @@
       "description": "OAuth 2.0 token for the current user.",
       "location": "query",
       "type": "string"
-    },
-    "pp": {
-      "default": "true",
-      "description": "Pretty-print response.",
-      "location": "query",
-      "type": "boolean"
     },
     "prettyPrint": {
       "default": "true",
@@ -1947,7 +1936,7 @@
       }
     }
   },
-  "revision": "20180524",
+  "revision": "20180709",
   "rootUrl": "https://adexchangebuyer.googleapis.com/",
   "schemas": {
     "AbsoluteDateRange": {
@@ -2297,7 +2286,7 @@
       "type": "object"
     },
     "Creative": {
-      "description": "A creative and its classification data.\n\nNext ID: 35",
+      "description": "A creative and its classification data.\n\nNext ID: 36",
       "id": "Creative",
       "properties": {
         "accountId": {
@@ -3654,8 +3643,12 @@
           },
           "type": "array"
         },
+        "disapproval": {
+          "$ref": "Disapproval",
+          "description": "Disapproval bound to this restriction.\nOnly present if status=DISAPPROVED.\nCan be used to filter the response of the\ncreatives.list\nmethod."
+        },
         "disapprovalReasons": {
-          "description": "Any disapprovals bound to this restriction.\nOnly present if status=DISAPPROVED.\nCan be used to filter the response of the\ncreatives.list\nmethod.",
+          "description": "Any disapprovals bound to this restriction.\nOnly present if status=DISAPPROVED.\nCan be used to filter the response of the\ncreatives.list\nmethod.\nDeprecated; please use\ndisapproval\nfield instead.",
           "items": {
             "$ref": "Disapproval"
           },

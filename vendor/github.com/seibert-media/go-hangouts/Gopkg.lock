@@ -4,8 +4,8 @@
 [[projects]]
   name = "cloud.google.com/go"
   packages = ["compute/metadata"]
-  revision = "056a55f54a6cc77b440b31a56a5e7c3982d32811"
-  version = "v0.22.0"
+  revision = "777200caa7fb8936aed0f12b1fd79af64cc83ec9"
+  version = "v0.24.0"
 
 [[projects]]
   name = "github.com/certifi/gocertifi"
@@ -15,31 +15,15 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/codahale/hdrhistogram"
-  packages = ["."]
-  revision = "3a0bb77429bd3a61596f5e8a3172445844342120"
-
-[[projects]]
-  branch = "master"
   name = "github.com/getsentry/raven-go"
   packages = ["."]
-  revision = "263040ce1a362270b5897a5982572ddc1fe807be"
+  revision = "ed7bcb39ff10f39ab08e317ce16df282845852fa"
 
 [[projects]]
   name = "github.com/golang/protobuf"
   packages = ["proto"]
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
   version = "v1.1.0"
-
-[[projects]]
-  name = "github.com/opentracing/opentracing-go"
-  packages = [
-    ".",
-    "ext",
-    "log"
-  ]
-  revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
-  version = "v1.0.2"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -49,45 +33,15 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/playnet-public/libs"
+  name = "github.com/seibert-media/golibs"
   packages = ["log"]
-  revision = "079f78fdc719b889e0698ca9e3c872920ca00052"
-
-[[projects]]
-  name = "github.com/uber/jaeger-client-go"
-  packages = [
-    ".",
-    "config",
-    "internal/baggage",
-    "internal/baggage/remote",
-    "internal/spanlog",
-    "internal/throttler",
-    "internal/throttler/remote",
-    "log",
-    "log/zap",
-    "rpcmetrics",
-    "thrift",
-    "thrift-gen/agent",
-    "thrift-gen/baggage",
-    "thrift-gen/jaeger",
-    "thrift-gen/sampling",
-    "thrift-gen/zipkincore",
-    "utils"
-  ]
-  revision = "b043381d944715b469fd6b37addfd30145ca1758"
-  version = "v2.14.0"
-
-[[projects]]
-  name = "github.com/uber/jaeger-lib"
-  packages = ["metrics"]
-  revision = "ed3a127ec5fef7ae9ea95b01b542c47fbd999ce5"
-  version = "v1.5.0"
+  revision = "9784a5cb2c6e4ea4a28687622fdeeef1113db87e"
 
 [[projects]]
   name = "go.uber.org/atomic"
   packages = ["."]
-  revision = "4e336646b2ef9fc6e47be8e21594178f98e5ebcf"
-  version = "v1.2.0"
+  revision = "1ea20fb1cbb1cc08cbd0d913a96dead89aa18289"
+  version = "v1.3.2"
 
 [[projects]]
   name = "go.uber.org/multierr"
@@ -115,7 +69,7 @@
     "context",
     "context/ctxhttp"
   ]
-  revision = "2491c5de3490fced2f6cff376127c667efeed857"
+  revision = "039a4258aec0ad3c79b905677cceeab13b296a77"
 
 [[projects]]
   branch = "master"
@@ -127,7 +81,7 @@
     "jws",
     "jwt"
   ]
-  revision = "cdc340f7c179dbbfa4afd43b7614e8fcadde4269"
+  revision = "ef147856a6ddbb60760db74283d2424e98c87bff"
 
 [[projects]]
   name = "google.golang.org/appengine"
@@ -143,12 +97,12 @@
     "internal/urlfetch",
     "urlfetch"
   ]
-  revision = "150dc57a1b433e64154302bdc40b6bb8aefa313a"
-  version = "v1.0.0"
+  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
+  version = "v1.1.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "940657b501913274c8920231d337704ce0b4f2d582345cacdf9c2ae056c29a24"
+  inputs-digest = "c67ebcebc92b8734080002ba99e8deff27c50d4c935e4800c0c3149c8588f088"
   solver-name = "gps-cdcl"
   solver-version = 1

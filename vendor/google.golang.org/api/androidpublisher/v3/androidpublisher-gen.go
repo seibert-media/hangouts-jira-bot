@@ -1087,6 +1087,12 @@ type InAppProduct struct {
 	// currency.
 	DefaultPrice *Price `json:"defaultPrice,omitempty"`
 
+	// GracePeriod: Grace period of the subscription, specified in ISO 8601
+	// format. It will allow developers to give their subscribers a grace
+	// period when the payment for the new recurrence period is declined.
+	// Acceptable values = "P3D" (three days) and "P7D" (seven days)
+	GracePeriod string `json:"gracePeriod,omitempty"`
+
 	// Listings: List of localized title and description data.
 	Listings map[string]InAppProductListing `json:"listings,omitempty"`
 
@@ -1453,7 +1459,7 @@ type ProductPurchase struct {
 	// billing flow. Possible values are:
 	// - Test (i.e. purchased from a license testing account)
 	// - Promo (i.e. purchased using a promo code)
-	PurchaseType int64 `json:"purchaseType,omitempty"`
+	PurchaseType *int64 `json:"purchaseType,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -1792,6 +1798,50 @@ func (s *SubscriptionDeferralInfo) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// SubscriptionPriceChange: Contains the price change information for a
+// subscription that can be used to control the user journey for the
+// price change in the app. This can be in the form of seeking
+// confirmation from the user or tailoring the experience for a
+// successful conversion.
+type SubscriptionPriceChange struct {
+	// NewPrice: The new price the subscription will renew with if the price
+	// change is accepted by the user.
+	NewPrice *Price `json:"newPrice,omitempty"`
+
+	// State: The current state of the price change. Possible values are:
+	//
+	// - Outstanding: State for a pending price change waiting for the user
+	// to agree. In this state, you can optionally seek confirmation from
+	// the user using the In-App API.
+	// - Accepted: State for an accepted price change that the subscription
+	// will renew with unless it's canceled. The price change takes effect
+	// on a future date when the subscription renews. Note that the change
+	// might not occur when the subscription is renewed next.
+	State int64 `json:"state,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "NewPrice") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NewPrice") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SubscriptionPriceChange) MarshalJSON() ([]byte, error) {
+	type NoMethod SubscriptionPriceChange
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // SubscriptionPurchase: A SubscriptionPurchase resource indicates the
 // status of a user's subscription purchase.
 type SubscriptionPurchase struct {
@@ -1874,6 +1924,14 @@ type SubscriptionPurchase struct {
 	// represents one unit of the currency. For example, if the subscription
 	// price is €1.99, price_amount_micros is 1990000.
 	PriceAmountMicros int64 `json:"priceAmountMicros,omitempty,string"`
+
+	// PriceChange: The latest price change information available. This is
+	// present only when there is an upcoming price change for the
+	// subscription yet to be applied.
+	//
+	// Once the subscription renews with the new price or the subscription
+	// is canceled, no price change information will be returned.
+	PriceChange *SubscriptionPriceChange `json:"priceChange,omitempty"`
 
 	// PriceCurrencyCode: ISO 4217 currency code for the subscription price.
 	// For example, if the price is specified in British pounds sterling,
@@ -3690,7 +3748,12 @@ type EditsBundlesUploadCall struct {
 	header_       http.Header
 }
 
-// Upload:
+// Upload: Uploads a new Android App Bundle to this edit. If you are
+// using the Google API client libraries, please increase the timeout of
+// the http request before calling this endpoint (a timeout of 2 minutes
+// is recommended). See:
+// https://developers.google.com/api-client-library/java/google-api-java-client/errors for an example in
+// java.
 func (r *EditsBundlesService) Upload(packageNameid string, editId string) *EditsBundlesUploadCall {
 	c := &EditsBundlesUploadCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.packageNameid = packageNameid
@@ -3847,6 +3910,7 @@ func (c *EditsBundlesUploadCall) Do(opts ...googleapi.CallOption) (*Bundle, erro
 	}
 	return ret, nil
 	// {
+	//   "description": "Uploads a new Android App Bundle to this edit. If you are using the Google API client libraries, please increase the timeout of the http request before calling this endpoint (a timeout of 2 minutes is recommended). See: https://developers.google.com/api-client-library/java/google-api-java-client/errors for an example in java.",
 	//   "httpMethod": "POST",
 	//   "id": "androidpublisher.edits.bundles.upload",
 	//   "mediaUpload": {

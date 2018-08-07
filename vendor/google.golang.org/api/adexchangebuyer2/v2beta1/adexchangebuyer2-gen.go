@@ -1066,7 +1066,7 @@ func (s *Correction) MarshalJSON() ([]byte, error) {
 
 // Creative: A creative and its classification data.
 //
-// Next ID: 35
+// Next ID: 36
 type Creative struct {
 	// AccountId: The account that this creative belongs to.
 	// Can be used to filter the response of the
@@ -3276,11 +3276,22 @@ type ServingRestriction struct {
 	// Contexts: The contexts for the restriction.
 	Contexts []*ServingContext `json:"contexts,omitempty"`
 
-	// DisapprovalReasons: Any disapprovals bound to this restriction.
+	// Disapproval: Disapproval bound to this restriction.
 	// Only present if status=DISAPPROVED.
 	// Can be used to filter the response of the
 	// creatives.list
 	// method.
+	Disapproval *Disapproval `json:"disapproval,omitempty"`
+
+	// DisapprovalReasons: Any disapprovals bound to this restriction.
+	// Only present if status=DISAPPROVED.
+	// Can be used to filter the response of
+	// the
+	// creatives.list
+	// method.
+	// Deprecated; please use
+	// disapproval
+	// field instead.
 	DisapprovalReasons []*Disapproval `json:"disapprovalReasons,omitempty"`
 
 	// Status: The status of the creative in this context (for example, it

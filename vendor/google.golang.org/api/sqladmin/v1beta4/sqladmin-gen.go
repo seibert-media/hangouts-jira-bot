@@ -1,4 +1,4 @@
-// Package sqladmin provides access to the Cloud SQL Administration API.
+// Package sqladmin provides access to the Cloud SQL Admin API.
 //
 // See https://cloud.google.com/sql/docs/reference/latest
 //
@@ -404,10 +404,10 @@ func (s *BinLogCoordinates) MarshalJSON() ([]byte, error) {
 
 // CloneContext: Database instance clone context.
 type CloneContext struct {
-	// BinLogCoordinates: Binary log coordinates, if specified, indentify
-	// the the position up to which the source instance should be cloned. If
-	// not specified, the source instance is cloned up to the most recent
-	// binary log coordintes.
+	// BinLogCoordinates: Binary log coordinates, if specified, identify the
+	// position up to which the source instance should be cloned. If not
+	// specified, the source instance is cloned up to the most recent binary
+	// log coordinates.
 	BinLogCoordinates *BinLogCoordinates `json:"binLogCoordinates,omitempty"`
 
 	// DestinationInstanceName: Name of the Cloud SQL instance to be created
@@ -897,19 +897,25 @@ func (s *DemoteMasterMySqlReplicaConfiguration) MarshalJSON() ([]byte, error) {
 // ExportContext: Database instance export context.
 type ExportContext struct {
 	// CsvExportOptions: Options for exporting data as CSV.
+	// Exporting in CSV format using the Cloud SQL Admin API is not
+	// supported for PostgreSQL instances.
 	CsvExportOptions *ExportContextCsvExportOptions `json:"csvExportOptions,omitempty"`
 
-	// Databases: Databases (for example, guestbook) from which the export
-	// is made. If fileType is SQL and no database is specified, all
-	// databases are exported. If fileType is CSV, you can optionally
-	// specify at most one database to export. If
-	// csvExportOptions.selectQuery also specifies the database, this field
-	// will be ignored.
+	// Databases: Databases to be exported.
+	// MySQL instances: If fileType is SQL and no database is specified, all
+	// databases are exported, except for the mysql system database. If
+	// fileType is CSV, you can specify one database, either by using this
+	// property or by using the csvExportOptions.selectQuery property, which
+	// takes precedence over this property.
+	// PostgreSQL instances: If fileType is SQL, you must specify one
+	// database to be exported. A fileType of CSV is not supported for
+	// PostgreSQL instances.
 	Databases []string `json:"databases,omitempty"`
 
 	// FileType: The file type for the specified uri.
 	// SQL: The file contains SQL statements.
 	// CSV: The file contains CSV data.
+	// CSV is not supported for PostgreSQL instances.
 	FileType string `json:"fileType,omitempty"`
 
 	// Kind: This is always sql#exportContext.
@@ -949,7 +955,10 @@ func (s *ExportContext) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ExportContextCsvExportOptions: Options for exporting data as CSV.
+// ExportContextCsvExportOptions: Options for exporting data as
+// CSV.
+// Exporting in CSV format using the Cloud SQL Admin API is not
+// supported for PostgreSQL instances.
 type ExportContextCsvExportOptions struct {
 	// SelectQuery: The select query used to extract the data.
 	SelectQuery string `json:"selectQuery,omitempty"`
@@ -985,6 +994,7 @@ type ExportContextSqlExportOptions struct {
 
 	// Tables: Tables to export, or that were exported, from the specified
 	// database. If you specify tables, specify one and only one database.
+	// For PostgreSQL instances, you can specify only one table.
 	Tables []string `json:"tables,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "SchemaOnly") to
@@ -1138,29 +1148,34 @@ func (s *FlagsListResponse) MarshalJSON() ([]byte, error) {
 // ImportContext: Database instance import context.
 type ImportContext struct {
 	// CsvImportOptions: Options for importing data as CSV.
+	// Importing CSV data using the Cloud SQL Admin API is not supported for
+	// PostgreSQL instances.
 	CsvImportOptions *ImportContextCsvImportOptions `json:"csvImportOptions,omitempty"`
 
-	// Database: The database (for example, guestbook) to which the import
-	// is made. If fileType is SQL and no database is specified, it is
-	// assumed that the database is specified in the file to be imported. If
-	// fileType is CSV, it must be specified.
+	// Database: The target database for the import. If fileType is SQL,
+	// this field is required only if the import file does not specify a
+	// database, and is overridden by any database specification in the
+	// import file. If fileType is CSV, one database must be specified.
 	Database string `json:"database,omitempty"`
 
 	// FileType: The file type for the specified uri.
 	// SQL: The file contains SQL statements.
 	// CSV: The file contains CSV data.
+	// Importing CSV data using the Cloud SQL Admin API is not supported for
+	// PostgreSQL instances.
 	FileType string `json:"fileType,omitempty"`
 
 	// ImportUser: The PostgreSQL user for this import operation. Defaults
-	// to cloudsqlsuperuser. Used only for PostgreSQL instances.
+	// to cloudsqlsuperuser. PostgreSQL instances only.
 	ImportUser string `json:"importUser,omitempty"`
 
 	// Kind: This is always sql#importContext.
 	Kind string `json:"kind,omitempty"`
 
-	// Uri: A path to the file in Google Cloud Storage from which the import
-	// is made. The URI is in the form gs://bucketName/fileName. Compressed
-	// gzip files (.gz) are supported when fileType is SQL.
+	// Uri: Path to the import file in Cloud Storage, in the form
+	// gs://bucketName/fileName. Compressed gzip files (.gz) are supported
+	// when fileType is SQL. The instance must have write permissions to the
+	// bucket and read access to the file.
 	Uri string `json:"uri,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "CsvImportOptions") to
@@ -1187,7 +1202,10 @@ func (s *ImportContext) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ImportContextCsvImportOptions: Options for importing data as CSV.
+// ImportContextCsvImportOptions: Options for importing data as
+// CSV.
+// Importing CSV data using the Cloud SQL Admin API is not supported for
+// PostgreSQL instances.
 type ImportContextCsvImportOptions struct {
 	// Columns: The columns to which CSV data is imported. If not specified,
 	// all columns of the database table are loaded with CSV data.
@@ -1543,6 +1561,9 @@ type IpConfiguration struct {
 	// not.
 	Ipv4Enabled bool `json:"ipv4Enabled,omitempty"`
 
+	// PrivateNetwork: Reserved for future use.
+	PrivateNetwork string `json:"privateNetwork,omitempty"`
+
 	// RequireSsl: Whether SSL connections over IP should be enforced or
 	// not.
 	RequireSsl bool `json:"requireSsl,omitempty"`
@@ -1624,7 +1645,7 @@ type LocationPreference struct {
 	// Kind: This is always sql#locationPreference.
 	Kind string `json:"kind,omitempty"`
 
-	// Zone: The preferred Compute Engine zone (e.g. us-centra1-a,
+	// Zone: The preferred Compute Engine zone (e.g. us-central1-a,
 	// us-central1-b, etc.).
 	Zone string `json:"zone,omitempty"`
 
@@ -1796,10 +1817,9 @@ func (s *OnPremisesConfiguration) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// Operation: An Operations resource contains information about database
-// instance operations such as create, delete, and restart. Operations
-// resources are created in response to operations that were initiated;
-// you never create them directly.
+// Operation: An Operation resource. For successful operations that
+// return an Operation resource, only the fields relevant to the
+// operation are populated in the resource.
 type Operation struct {
 	// EndTime: The time this operation finished in UTC timezone in RFC 3339
 	// format, for example 2012-11-15T16:19:00.094Z.
@@ -2361,8 +2381,7 @@ func (s *SslCertsCreateEphemeralRequest) MarshalJSON() ([]byte, error) {
 // SslCertsInsertRequest: SslCerts insert request.
 type SslCertsInsertRequest struct {
 	// CommonName: User supplied name. Must be a distinct name from the
-	// other certificates for this instance. New certificates will not be
-	// usable until the instance is restarted.
+	// other certificates for this instance.
 	CommonName string `json:"commonName,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "CommonName") to
@@ -2482,8 +2501,8 @@ type Tier struct {
 	// Region: The applicable regions for this tier.
 	Region []string `json:"region,omitempty"`
 
-	// Tier: An identifier for the service tier, for example D1, D2 etc. For
-	// related information, see Pricing.
+	// Tier: An identifier for the machine type, for example,
+	// db-n1-standard-1. For related information, see Pricing.
 	Tier string `json:"tier,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "DiskQuota") to
@@ -3894,7 +3913,7 @@ func (c *DatabasesListCall) Do(opts ...googleapi.CallOption) (*DatabasesListResp
 	//       "type": "string"
 	//     },
 	//     "project": {
-	//       "description": "Project ID of the project for which to list Cloud SQL instances.",
+	//       "description": "Project ID of the project that contains the instance.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -4232,8 +4251,7 @@ type FlagsListCall struct {
 	header_      http.Header
 }
 
-// List: List all available database flags for Google Cloud SQL
-// instances.
+// List: List all available database flags for Cloud SQL instances.
 func (r *FlagsService) List() *FlagsListCall {
 	c := &FlagsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
@@ -4338,7 +4356,7 @@ func (c *FlagsListCall) Do(opts ...googleapi.CallOption) (*FlagsListResponse, er
 	}
 	return ret, nil
 	// {
-	//   "description": "List all available database flags for Google Cloud SQL instances.",
+	//   "description": "List all available database flags for Cloud SQL instances.",
 	//   "httpMethod": "GET",
 	//   "id": "sql.flags.list",
 	//   "parameters": {
@@ -4374,8 +4392,8 @@ type InstancesAddServerCaCall struct {
 // AddServerCa: Add a new trusted Certificate Authority (CA) version for
 // the specified instance. Required to prepare for a certificate
 // rotation. If a CA version was previously added but never used in a
-// certificate rotation, this operation replaces that version. There can
-// not be more than one CA version waiting to be rotated in.
+// certificate rotation, this operation replaces that version. There
+// cannot be more than one CA version waiting to be rotated in.
 func (r *InstancesService) AddServerCa(project string, instance string) *InstancesAddServerCaCall {
 	c := &InstancesAddServerCaCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -4465,7 +4483,7 @@ func (c *InstancesAddServerCaCall) Do(opts ...googleapi.CallOption) (*Operation,
 	}
 	return ret, nil
 	// {
-	//   "description": "Add a new trusted Certificate Authority (CA) version for the specified instance. Required to prepare for a certificate rotation. If a CA version was previously added but never used in a certificate rotation, this operation replaces that version. There can not be more than one CA version waiting to be rotated in.",
+	//   "description": "Add a new trusted Certificate Authority (CA) version for the specified instance. Required to prepare for a certificate rotation. If a CA version was previously added but never used in a certificate rotation, this operation replaces that version. There cannot be more than one CA version waiting to be rotated in.",
 	//   "httpMethod": "POST",
 	//   "id": "sql.instances.addServerCa",
 	//   "parameterOrder": [
@@ -4511,7 +4529,7 @@ type InstancesCloneCall struct {
 }
 
 // Clone: Creates a Cloud SQL instance as a clone of the source
-// instance. The API is not ready for Second Generation instances yet.
+// instance.
 func (r *InstancesService) Clone(project string, instance string, instancesclonerequest *InstancesCloneRequest) *InstancesCloneCall {
 	c := &InstancesCloneCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -4607,7 +4625,7 @@ func (c *InstancesCloneCall) Do(opts ...googleapi.CallOption) (*Operation, error
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a Cloud SQL instance as a clone of the source instance. The API is not ready for Second Generation instances yet.",
+	//   "description": "Creates a Cloud SQL instance as a clone of the source instance.",
 	//   "httpMethod": "POST",
 	//   "id": "sql.instances.clone",
 	//   "parameterOrder": [
@@ -4789,7 +4807,8 @@ type InstancesDemoteMasterCall struct {
 	header_                      http.Header
 }
 
-// DemoteMaster: Reserved for future use.
+// DemoteMaster: Demotes the stand-alone instance to be a Cloud SQL read
+// replica for an external database server.
 func (r *InstancesService) DemoteMaster(project string, instance string, instancesdemotemasterrequest *InstancesDemoteMasterRequest) *InstancesDemoteMasterCall {
 	c := &InstancesDemoteMasterCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -4885,7 +4904,7 @@ func (c *InstancesDemoteMasterCall) Do(opts ...googleapi.CallOption) (*Operation
 	}
 	return ret, nil
 	// {
-	//   "description": "Reserved for future use.",
+	//   "description": "Demotes the stand-alone instance to be a Cloud SQL read replica for an external database server.",
 	//   "httpMethod": "POST",
 	//   "id": "sql.instances.demoteMaster",
 	//   "parameterOrder": [
@@ -4933,8 +4952,8 @@ type InstancesExportCall struct {
 	header_                http.Header
 }
 
-// Export: Exports data from a Cloud SQL instance to a Google Cloud
-// Storage bucket as a MySQL dump file.
+// Export: Exports data from a Cloud SQL instance to a Cloud Storage
+// bucket as a SQL dump or CSV file.
 func (r *InstancesService) Export(project string, instance string, instancesexportrequest *InstancesExportRequest) *InstancesExportCall {
 	c := &InstancesExportCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -5030,7 +5049,7 @@ func (c *InstancesExportCall) Do(opts ...googleapi.CallOption) (*Operation, erro
 	}
 	return ret, nil
 	// {
-	//   "description": "Exports data from a Cloud SQL instance to a Google Cloud Storage bucket as a MySQL dump file.",
+	//   "description": "Exports data from a Cloud SQL instance to a Cloud Storage bucket as a SQL dump or CSV file.",
 	//   "httpMethod": "POST",
 	//   "id": "sql.instances.export",
 	//   "parameterOrder": [
@@ -5370,8 +5389,8 @@ type InstancesImportCall struct {
 	header_                http.Header
 }
 
-// Import: Imports data into a Cloud SQL instance from a MySQL dump file
-// in Google Cloud Storage.
+// Import: Imports data into a Cloud SQL instance from a SQL dump or CSV
+// file in Cloud Storage.
 func (r *InstancesService) Import(project string, instance string, instancesimportrequest *InstancesImportRequest) *InstancesImportCall {
 	c := &InstancesImportCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -5467,7 +5486,7 @@ func (c *InstancesImportCall) Do(opts ...googleapi.CallOption) (*Operation, erro
 	}
 	return ret, nil
 	// {
-	//   "description": "Imports data into a Cloud SQL instance from a MySQL dump file in Google Cloud Storage.",
+	//   "description": "Imports data into a Cloud SQL instance from a SQL dump or CSV file in Cloud Storage.",
 	//   "httpMethod": "POST",
 	//   "id": "sql.instances.import",
 	//   "parameterOrder": [
@@ -6280,10 +6299,7 @@ type InstancesResetSslConfigCall struct {
 }
 
 // ResetSslConfig: Deletes all client certificates and generates a new
-// server SSL certificate for the instance. The changes will not take
-// effect until the instance is restarted. Existing instances without a
-// server certificate will need to call this once to set a server
-// certificate.
+// server SSL certificate for the instance.
 func (r *InstancesService) ResetSslConfig(project string, instance string) *InstancesResetSslConfigCall {
 	c := &InstancesResetSslConfigCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -6373,7 +6389,7 @@ func (c *InstancesResetSslConfigCall) Do(opts ...googleapi.CallOption) (*Operati
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes all client certificates and generates a new server SSL certificate for the instance. The changes will not take effect until the instance is restarted. Existing instances without a server certificate will need to call this once to set a server certificate.",
+	//   "description": "Deletes all client certificates and generates a new server SSL certificate for the instance.",
 	//   "httpMethod": "POST",
 	//   "id": "sql.instances.resetSslConfig",
 	//   "parameterOrder": [
@@ -7892,8 +7908,8 @@ type SslCertsDeleteCall struct {
 	header_         http.Header
 }
 
-// Delete: Deletes the SSL certificate. The change will not take effect
-// until the instance is restarted.
+// Delete: Deletes the SSL certificate. For First Generation instances,
+// the certificate remains valid until the instance is restarted.
 func (r *SslCertsService) Delete(project string, instance string, sha1Fingerprint string) *SslCertsDeleteCall {
 	c := &SslCertsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -7985,7 +8001,7 @@ func (c *SslCertsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes the SSL certificate. The change will not take effect until the instance is restarted.",
+	//   "description": "Deletes the SSL certificate. For First Generation instances, the certificate remains valid until the instance is restarted.",
 	//   "httpMethod": "DELETE",
 	//   "id": "sql.sslCerts.delete",
 	//   "parameterOrder": [
@@ -8001,7 +8017,7 @@ func (c *SslCertsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error
 	//       "type": "string"
 	//     },
 	//     "project": {
-	//       "description": "Project ID of the project that contains the instance to be deleted.",
+	//       "description": "Project ID of the project that contains the instance.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -8310,7 +8326,7 @@ func (c *SslCertsInsertCall) Do(opts ...googleapi.CallOption) (*SslCertsInsertRe
 	//       "type": "string"
 	//     },
 	//     "project": {
-	//       "description": "Project ID of the project to which the newly created Cloud SQL instances should belong.",
+	//       "description": "Project ID of the project that contains the instance.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -8461,7 +8477,7 @@ func (c *SslCertsListCall) Do(opts ...googleapi.CallOption) (*SslCertsListRespon
 	//       "type": "string"
 	//     },
 	//     "project": {
-	//       "description": "Project ID of the project for which to list Cloud SQL instances.",
+	//       "description": "Project ID of the project that contains the instance.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -8490,8 +8506,8 @@ type TiersListCall struct {
 	header_      http.Header
 }
 
-// List: Lists all available service tiers for Google Cloud SQL, for
-// example D1, D2. For related information, see Pricing.
+// List: Lists all available machine types (tiers) for Cloud SQL, for
+// example, db-n1-standard-1. For related information, see Pricing.
 func (r *TiersService) List(project string) *TiersListCall {
 	c := &TiersListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.project = project
@@ -8592,7 +8608,7 @@ func (c *TiersListCall) Do(opts ...googleapi.CallOption) (*TiersListResponse, er
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists all available service tiers for Google Cloud SQL, for example D1, D2. For related information, see Pricing.",
+	//   "description": "Lists all available machine types (tiers) for Cloud SQL, for example, db-n1-standard-1. For related information, see Pricing.",
 	//   "httpMethod": "GET",
 	//   "id": "sql.tiers.list",
 	//   "parameterOrder": [
