@@ -13,8 +13,7 @@ before_install:
 
 before_script:
   - make check
-  - godacov -t $CODACY_TOKEN -r ./coverage.out -c $TRAVIS_COMMIT
-
+ 
 script:
 - make docker
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD" quay.io
