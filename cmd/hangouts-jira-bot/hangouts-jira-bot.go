@@ -63,7 +63,8 @@ func main() {
 	logger := log.New(*sentryDsn, *dbg)
 	defer logger.Sync()
 
-	ctx := log.WithFields(context.Background(), zapFields...)
+	ctx := log.WithLogger(context.Background(), logger)
+	ctx = log.WithFields(ctx, zapFields...)
 
 	log.From(ctx).Info("preparing")
 

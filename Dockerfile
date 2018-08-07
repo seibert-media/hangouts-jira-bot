@@ -27,4 +27,4 @@ ADD ./files/go-cloud-debug /
 ADD ./files/source-context.json /
 COPY files/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-ENTRYPOINT ["./go-cloud-debug", "-sourcecontext=source-context.json", "-appmodule=hangouts-jira-bot", "--", "app"]
+ENTRYPOINT ["./app"]
