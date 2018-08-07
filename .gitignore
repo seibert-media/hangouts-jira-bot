@@ -1,3 +1,4 @@
 build
 .env
 auth.json
+files/source-context.json
