@@ -28,3 +28,13 @@ KIT_VERSION = "\
 	-X ${GIT_HOST}/${REPO}/${NAME}/vendor/github.com/kolide/kit/version.buildDate=${NOW} \
 	-X ${GIT_HOST}/${REPO}/${NAME}/vendor/github.com/kolide/kit/version.buildUser=${USER} \
 	-X ${GIT_HOST}/${REPO}/${NAME}/vendor/github.com/kolide/kit/version.goVersion=${GOVERSION}"
+
+KIT_VERSION_DOCKER = "\
+	-X $(GIT_HOST)/$(REPO)/$(NAME)/vendor/github.com/kolide/kit/version.appName=$(NAME) \
+	-X $(GIT_HOST)/$(REPO)/$(NAME)/vendor/github.com/kolide/kit/version.version=$(VERSION) \
+	-X $(GIT_HOST)/$(REPO)/$(NAME)/vendor/github.com/kolide/kit/version.branch=$(BRANCH) \
+	-X $(GIT_HOST)/$(REPO)/$(NAME)/vendor/github.com/kolide/kit/version.revision=$(REVISION) \
+	-X $(GIT_HOST)/$(REPO)/$(NAME)/vendor/github.com/kolide/kit/version.buildDate=$(NOW) \
+	-X $(GIT_HOST)/$(REPO)/$(NAME)/vendor/github.com/kolide/kit/version.buildUser=$(USER) \
+	-X $(GIT_HOST)/$(REPO)/$(NAME)/vendor/github.com/kolide/kit/version.goVersion=$(GOVERSION) \
+	-s"
