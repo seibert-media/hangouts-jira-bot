@@ -56,7 +56,6 @@ Then deploy the [docker image](https://quay.io/repository/seibertmedia/hangouts-
 * **GOOGLE_PROJECT_ID**: Google Cloud Project ID you setup earlier
 * **GOOGLE_PUBSUB_TOPIC**: The PubSub Topic you setup earlier
 * **GOOGLE_PUBSUB_SUBSCRIPTION**: The PubSub Subscription you setup earlier
-
 * **JIRA_URL**: URL of your Jira Server Instance
 * **JIRA_USERNAME**: Username as which the bot will access Jira to search/get Issues
 * **JIRA_PASSWORD**: Password of the above user
