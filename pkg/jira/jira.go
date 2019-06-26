@@ -67,7 +67,7 @@ func (j *JIRA) Callback(ctx context.Context, m *pubsub.Message) {
 
 	m.Ack()
 
-	regex := regexp.MustCompile("[A-Z]+-[1-9][0-9]*")
+	regex := regexp.MustCompile("[A-Za-z]+-[1-9][0-9]*")
 	issues := regex.FindAllString(msg.Message.Text, -1)
 	for _, issue := range issues {
 		log.From(ctx).Debug("handling issue", zap.String("id", issue))
