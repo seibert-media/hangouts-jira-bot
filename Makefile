@@ -34,7 +34,7 @@ all: test install run
 # install required tools and dependencies
 deps:
 	go get -u github.com/golang/dep/cmd/dep
-	go get -u github.com/golang/lint/golint
+	go get -u golang.org/x/lint/golint
 	go get -u github.com/haya14busa/goverage
 	go get -u github.com/kisielk/errcheck
 	go get -u github.com/maxbrunsfeld/counterfeiter
