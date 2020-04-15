@@ -142,8 +142,6 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4/go.mod h1:xMI15A0UPsDsEKsMN9yxemIoYk6Tm2C1GtYGdfGttqA=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
-github.com/seibert-media/go-hangouts v0.0.0-20181026103319-e5da31b667a0 h1:c/J+GwSC8/d1Lqhj4NV5dj9MNFcOF5pm7yVCebK1RTE=
-github.com/seibert-media/go-hangouts v0.0.0-20181026103319-e5da31b667a0/go.mod h1:DHuheUIc6lx5iy1TX3OUiG2+MzMKlaM9HtVlP/qey6g=
 github.com/seibert-media/golibs v1.0.3 h1:wslEmLBDiJ+mgRgVKuuQGwsAkgtMjiRLJzhtBLb0u5I=
 github.com/seibert-media/golibs v1.0.3/go.mod h1:CW082mp7He42qX4/+Y7RmtG15MCy0495zkYaF/m7r0A=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

@@ -52,8 +52,6 @@ github.com/jstemmer/go-junit-report/formatter
 github.com/jstemmer/go-junit-report/parser
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
-# github.com/seibert-media/go-hangouts v0.0.0-20181026103319-e5da31b667a0
-github.com/seibert-media/go-hangouts
 # github.com/seibert-media/golibs v1.0.3
 github.com/seibert-media/golibs/log
 # github.com/tchap/zapext v1.0.0
@@ -69,6 +67,8 @@ go.opencensus.io/internal/tagencoding
 go.opencensus.io/metric/metricdata
 go.opencensus.io/metric/metricproducer
 go.opencensus.io/plugin/ocgrpc
+go.opencensus.io/plugin/ochttp
+go.opencensus.io/plugin/ochttp/propagation/b3
 go.opencensus.io/resource
 go.opencensus.io/stats
 go.opencensus.io/stats/internal
@@ -146,11 +146,20 @@ golang.org/x/tools/internal/telemetry/event
 golang.org/x/xerrors
 golang.org/x/xerrors/internal
 # google.golang.org/api v0.21.0
+google.golang.org/api/chat/v1
+google.golang.org/api/googleapi
+google.golang.org/api/googleapi/transport
 google.golang.org/api/internal
+google.golang.org/api/internal/gensupport
+google.golang.org/api/internal/third_party/uritemplates
 google.golang.org/api/iterator
 google.golang.org/api/option
+google.golang.org/api/option/internaloption
 google.golang.org/api/support/bundler
+google.golang.org/api/transport/cert
 google.golang.org/api/transport/grpc
+google.golang.org/api/transport/http
+google.golang.org/api/transport/http/internal/propagation
 # google.golang.org/appengine v1.6.5
 google.golang.org/appengine
 google.golang.org/appengine/internal

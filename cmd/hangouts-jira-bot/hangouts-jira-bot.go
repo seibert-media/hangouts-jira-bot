@@ -6,12 +6,14 @@ import (
 
 	"github.com/seibert-media/hangouts-jira-bot/pkg/jira"
 	"github.com/seibert-media/hangouts-jira-bot/pkg/pubsub"
+	"google.golang.org/api/chat/v1"
+	"google.golang.org/api/option"
 
 	flag "github.com/bborbe/flagenv"
-	"github.com/seibert-media/go-hangouts"
 	"github.com/seibert-media/golibs/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"golang.org/x/oauth2/google"
 )
 
 const appKey = "hangouts-jira-bot"
@@ -35,21 +37,20 @@ func main() {
 	flag.Parse()
 	runtime.GOMAXPROCS(*maxprocs)
 
-	var zapFields []zapcore.Field
-	if !*dbg {
-		zapFields = []zapcore.Field{
-			zap.String("app", appKey),
-		}
-	}
-
 	logger, err := log.New(*sentryDSN, *dbg)
 	if err != nil {
 		panic(err)
 	}
 	defer logger.Sync()
 
-	ctx := log.WithLogger(context.Background(), logger)
-	ctx = log.WithFields(ctx, zapFields...)
+	if *dbg {
+		logger.SetLevel(zapcore.DebugLevel)
+	}
+
+	ctx := log.WithFields(
+		log.WithLogger(context.Background(), logger),
+		zap.String("app", appKey),
+	)
 
 	log.From(ctx).Info("preparing")
 
@@ -58,15 +59,20 @@ func main() {
 		log.From(ctx).Fatal("creating pubsub client", zap.Error(err))
 	}
 
-	ha, err := hangouts.New(ctx, "")
+	chatClient, err := google.DefaultClient(ctx, "https://www.googleapis.com/auth/chat.bot")
 	if err != nil {
-		log.From(ctx).Fatal("creating hangouts client", zap.Error(err))
+		log.From(ctx).Fatal("creating chat http client", zap.Error(err))
 	}
 
-	ji := jira.New(ctx, *jiraURL, *jiraUsername, *jiraPassword, ha)
+	chat, err := chat.NewService(ctx, option.WithHTTPClient(chatClient))
+	if err != nil {
+		log.From(ctx).Fatal("creating chat client", zap.Error(err))
+	}
+
+	jira := jira.New(ctx, *jiraURL, *jiraUsername, *jiraPassword, chat)
 
 	log.From(ctx).Info("listening on subscription")
-	err = ps.Receive(ctx, ji.Callback)
+	err = ps.Receive(ctx, jira.Callback)
 	if err != nil {
 		log.From(ctx).Error("receiving", zap.Error(err))
 	}
