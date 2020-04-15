@@ -1,4 +1,11 @@
 build
 .env
-auth.json
-files/source-context.json
+coverage.out
+*.coverprofile
+client_secret.json
+.credentials
+debug
+source-context.json
+kubernetes-manifests/results
+node_modules
+ui/node_modules

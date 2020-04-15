@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hangouts-jira-bot
+data:
+  pubsub-project: "{{_PUBSUB_PROJECT}}"
+  pubsub-topic: "{{_PUBSUB_TOPIC}}"
+  pubsub-subscription: "{{_PUBSUB_SUBSCRIPTION}}"

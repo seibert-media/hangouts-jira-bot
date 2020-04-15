@@ -1,0 +1,58 @@
+steps:
+
+# build image
+- name: 'gcr.io/cloud-builders/docker'
+  id: build
+  args:
+  - build
+  - --tag=${_REGISTRY}/$PROJECT_ID/hangouts-jira-bot:$SHORT_SHA
+  - --tag=quay.io/seibertmedia/hangouts-jira-bot:$SHORT_SHA
+  - --file=Dockerfile
+  - .
+
+# push image
+- name: 'gcr.io/cloud-builders/docker'
+  id: push
+  waitFor:
+    - build
+  args: ['push', '${_REGISTRY}/$PROJECT_ID/hangouts-jira-bot:$SHORT_SHA']
+
+
+# template configmap
+- name: 'gcr.io/cloud-builders/gcloud'
+  id: templateConfigMap
+  entrypoint: /bin/sh
+  args: ['-c', './scripts/template_configmap.sh']
+
+# deploy
+- name: "gcr.io/cloud-builders/gke-deploy"
+  id: deploy
+  waitFor:
+    - templateConfigMap
+    - push
+  args:
+  - run
+  - --filename=kubernetes-manifests/
+  - --output=Manifests
+  - --image=${_REGISTRY}/$PROJECT_ID/hangouts-jira-bot:$SHORT_SHA
+  - --namespace=hangouts-jira-bot
+  - --location=${_CLUSTER_LOCATION}
+  - --cluster=${_CLUSTER_NAME}
+
+# defs
+substitutions:
+  # cluster to deploy to
+  _CLUSTER_NAME: dev
+  _CLUSTER_LOCATION: europe-west3-c
+  # registry to push the image
+  _REGISTRY: eu.gcr.io
+  # project of the pubsub topic to receive chat messages
+  _PUBSUB_PROJECT: hangouts-jira-bot-dev
+  # topic where chat messages will be sent to by Google
+  _PUBSUB_TOPIC: hangouts-jira-bot
+  # subscription to the topic used by this bot
+  _PUBSUB_SUBSCRIPTION: hangouts-jira-bot
+
+options:
+  # skip substitution check, as not all of them are used directly in the config
+  substitutionOption: ALLOW_LOOSE

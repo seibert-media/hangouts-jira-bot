@@ -7,7 +7,6 @@ import (
 	"cloud.google.com/go/pubsub"
 	"github.com/seibert-media/golibs/log"
 	"go.uber.org/zap"
-	"google.golang.org/api/option"
 )
 
 // PubSub connection
@@ -18,7 +17,7 @@ type PubSub struct {
 }
 
 // New PubSub connection
-func New(ctx context.Context, serviceAccount, projectID, topic, subscription string) (*PubSub, error) {
+func New(ctx context.Context, projectID, topic, subscription string) (*PubSub, error) {
 	ctx = log.WithFields(ctx,
 		zap.String("component", "pubsub"),
 		zap.String("projectID", projectID),
@@ -26,7 +25,7 @@ func New(ctx context.Context, serviceAccount, projectID, topic, subscription str
 		zap.String("subscription", subscription),
 	)
 
-	client, err := pubsub.NewClient(ctx, projectID, option.WithServiceAccountFile(serviceAccount))
+	client, err := pubsub.NewClient(ctx, projectID)
 	if err != nil {
 		log.From(ctx).Error("pubsub connection error", zap.Error(err))
 		return nil, err

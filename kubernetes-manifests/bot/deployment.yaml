@@ -1,0 +1,92 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hangouts-jira-bot
+  labels:
+    app: hangouts-jira-bot
+    k8s.seibert-media.io/priority: "low"
+  annotations:
+    k8s.seibert-media.io/owner: "Team Google <team-google@seibert-media.net>"
+    k8s.seibert-media.io/source: "https://github.com/seibert-media/hangouts-jira-bot"
+    k8s.seibert-media.io/description: "A Google Chat bot for interacting with Jira Issues."
+    k8s.seibert-media.io/docs: "https://github.com/seibert-media/hangouts-jira-bot"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hangouts-jira-bot
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: hangouts-jira-bot
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "8080"
+        prometheus.io/scheme: http
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - name: api
+        image: eu.gcr.io/gce-smedia-k8s/hangouts-jira-bot
+        imagePullPolicy: Always
+        env:
+        - name: DEBUG
+          value: "false"
+        - name: SENTRYDSN
+          valueFrom:
+            secretKeyRef:
+              name: hangouts-jira-bot
+              key: sentry-dsn
+        - name: GOOGLE_PROJECT_ID
+          valueFrom:
+            configMapKeyRef:
+              name: hangouts-jira-bot
+              key: pubsub-project
+        - name: GOOGLE_PUBSUB_TOPIC
+          value: hangouts-jira-bot
+          valueFrom:
+            configMapKeyRef:
+              name: hangouts-jira-bot
+              key: pubsub-topic
+        - name: GOOGLE_PUBSUB_SUBSCRIPTION
+          valueFrom:
+            configMapKeyRef:
+              name: hangouts-jira-bot
+              key: pubsub-subscription
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /auth/auth.json
+        - name: JIRA_URL
+          valueFrom:
+            secretKeyRef:
+              name: hangouts-jira-bot
+              key: jira-url
+        - name: JIRA_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: hangouts-jira-bot
+              key: jira-username
+        - name: JIRA_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: hangouts-jira-bot
+              key: jira-password
+        volumeMounts:
+        - name: google-cloud-key
+          mountPath: /var/secrets/google
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 500Mi
+          requests:
+            cpu: 20m
+            memory: 100Mi
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: hangouts-jira-bot
