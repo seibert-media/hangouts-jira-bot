@@ -8,7 +8,7 @@ updateDebugger:
 
 
 teamvault-config-dir-generator:
-	@go get github.com/bborbe/teamvault-utils/cmd/teamvault-config-dir-generator
+	@GO111MODULE=off go get github.com/bborbe/teamvault-utils/cmd/teamvault-config-dir-generator
 
 generate: teamvault-config-dir-generator
 	@test -f ${TEAMVAULT_SM} || echo "\nMissing file ${TEAMVAULT_SM} :\n{\n \"url\": \"https://teamvault.apps.seibert-media.net\",\n \"user\": \"mmustermann\",\n \"pass\": \"PASSWORT\"\\n}"
@@ -31,7 +31,7 @@ gotest:
 	@go test -cover -race $(shell go list ./... | grep -v /vendor/)
 
 test:
-	@go get github.com/onsi/ginkgo/ginkgo
+	@GO111MODULE=off go get github.com/onsi/ginkgo/ginkgo
 	@ginkgo -r -race
 
 # format entire repo (excluding vendor)

@@ -21,8 +21,12 @@ steps:
 # template configmap
 - name: 'gcr.io/cloud-builders/gcloud'
   id: templateConfigMap
-  entrypoint: /bin/sh
-  args: ['-c', './scripts/template_configmap.sh', '${_PUBSUB_PROJECT}', '${_PUBSUB_TOPIC}', '${_PUBSUB_SUBSCRIPTION}']
+  entrypoint: /bin/bash
+  args: ['./scripts/template_configmap.sh']
+  env:
+    - 'PUBSUB_PROJECT=$_PUBSUB_PROJECT'
+    - 'PUBSUB_TOPIC=$_PUBSUB_TOPIC'
+    - 'PUBSUB_SUBSCRIPTION=$_PUBSUB_SUBSCRIPTION'
 
 # deploy
 - name: "gcr.io/cloud-builders/gke-deploy"

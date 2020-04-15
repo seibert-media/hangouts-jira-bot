@@ -6,7 +6,7 @@ WORKDIR /src/hangouts-jira-bot
 COPY . ./
 
 # Compile the application to /app.
-RUN CGO_ENABLED=0 GOOS=linux go build -a -o /app ./cmd/hangouts-jira-bot
+RUN CGO_ENABLED=0 GOOS=linux go build -mod=vendor -a -o /app ./cmd/hangouts-jira-bot
 
 FROM scratch
 
