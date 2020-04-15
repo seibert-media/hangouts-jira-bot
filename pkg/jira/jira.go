@@ -171,7 +171,9 @@ func (j *JIRA) handleDetailedError(ctx context.Context, msg *chat.Message, err e
 		mb, _ = json.Marshal(msg)
 		log.From(ctx).Debug("message", zap.String("content", string(mb)))
 	}
-	j.chat.Create(msg.Space.Name, j.buildErrorMessage(errors.Wrap(err, details), msg.Thread.Name))
+	if _, err := j.chat.Create(msg.Space.Name, j.buildErrorMessage(errors.Wrap(err, details), msg.Thread.Name)).Context(ctx).Do(); err != nil {
+		log.From(ctx).Error("sending error message", zap.Error(err))
+	}
 }
 
 func (j *JIRA) buildErrorMessage(e error, thread string) *chat.Message {
