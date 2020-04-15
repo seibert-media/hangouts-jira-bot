@@ -22,7 +22,7 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   id: templateConfigMap
   entrypoint: /bin/sh
-  args: ['-c', './scripts/template_configmap.sh']
+  args: ['-c', './scripts/template_configmap.sh', '${_PUBSUB_PROJECT}', '${_PUBSUB_TOPIC}', '${_PUBSUB_SUBSCRIPTION}']
 
 # deploy
 - name: "gcr.io/cloud-builders/gke-deploy"
@@ -32,7 +32,7 @@ steps:
     - push
   args:
   - run
-  - --filename=kubernetes-manifests/
+  - --filename=kubernetes-manifests/bot
   - --output=Manifests
   - --image=${_REGISTRY}/$PROJECT_ID/hangouts-jira-bot:$SHORT_SHA
   - --namespace=hangouts-jira-bot
