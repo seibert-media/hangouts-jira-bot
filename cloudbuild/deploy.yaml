@@ -6,7 +6,6 @@ steps:
   args:
   - build
   - --tag=${_REGISTRY}/$PROJECT_ID/hangouts-jira-bot:$SHORT_SHA
-  - --tag=quay.io/seibertmedia/hangouts-jira-bot:$SHORT_SHA
   - --file=Dockerfile
   - .
 

@@ -49,10 +49,10 @@ The builds and deployments are done by [Google Cloud Build](http://cloud.google.
 
 The project contains two cloudbuild configurations.
 
-- `cloudbuild.yaml` is the default config that could be used by consumers to deploy their own bot.
-- `cloudbuild_publish.yaml` also publishes the docker image to quay.io for public use and is being run in our own pipeline.
+- `cloudbuild/deploy.yaml` is the default config that could be used by consumers to deploy their own bot.
+- `cloudbuild/publish.yaml` also publishes the docker image to quay.io for public use and is being run in our own pipeline.
 
-The `cloudbuild.yaml` contains several substitution variables to customize the deployment.
+The [cloudbuild/deploy.yaml](./cloudbuild/deploy.yaml) contains several substitution variables to customize the deployment.
 Internally we run three different deployments based on the `dev`, `staging` and `master` branch, each deploying to a different cluster with a different Chat config.
 
 ### Project Setup
@@ -93,7 +93,7 @@ To do so, create a fork on GitHub.
 Then [link your newly created repository with Cloud Build](https://console.cloud.google.com/cloud-build/triggers/connect).
 
 Once this is done, you can create a trigger.
-Make sure to select `Cloud Build configuration file` in the `Build Configuration` section and type `cloudbuild.yaml` into the textbox.
+Make sure to select `Cloud Build configuration file` in the `Build Configuration` section and type `cloudbuild/deploy.yaml` into the textbox.
 **Do not use the publish yaml, or your build will fail.**
 
 Then add the substitution variables:
