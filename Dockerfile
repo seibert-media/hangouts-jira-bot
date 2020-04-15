@@ -2,10 +2,6 @@ FROM golang:1.13 as builder
 
 WORKDIR /src/hangouts-jira-bot
 
-# Install dependencies in go.mod and go.sum
-COPY go.mod go.sum ./
-RUN go mod download
-
 # Copy rest of the application source code
 COPY . ./
 
