@@ -19,6 +19,7 @@
 package alts
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -29,10 +30,10 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
-	"time"
 
-	"golang.org/x/net/context"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/peer"
+	"google.golang.org/grpc/status"
 )
 
 const (
@@ -41,7 +42,6 @@ const (
 	windowsCheckCommandArgs  = "Get-WmiObject -Class Win32_BIOS"
 	powershellOutputFilter   = "Manufacturer"
 	windowsManufacturerRegex = ":(.*)"
-	windowsCheckTimeout      = 30 * time.Second
 )
 
 type platformError string
@@ -85,6 +85,9 @@ var (
 // running on GCP.
 func isRunningOnGCP() bool {
 	manufacturer, err := readManufacturer()
+	if os.IsNotExist(err) {
+		return false
+	}
 	if err != nil {
 		log.Fatalf("failure to read manufacturer information: %v", err)
 	}
@@ -124,13 +127,37 @@ func readManufacturer() ([]byte, error) {
 // information about the communicating peer. For client-side, use grpc.Peer()
 // CallOption.
 func AuthInfoFromContext(ctx context.Context) (AuthInfo, error) {
-	peer, ok := peer.FromContext(ctx)
+	p, ok := peer.FromContext(ctx)
 	if !ok {
 		return nil, errors.New("no Peer found in Context")
 	}
-	altsAuthInfo, ok := peer.AuthInfo.(AuthInfo)
+	return AuthInfoFromPeer(p)
+}
+
+// AuthInfoFromPeer extracts the alts.AuthInfo object from the given peer, if it
+// exists. This API should be used by gRPC clients after obtaining a peer object
+// using the grpc.Peer() CallOption.
+func AuthInfoFromPeer(p *peer.Peer) (AuthInfo, error) {
+	altsAuthInfo, ok := p.AuthInfo.(AuthInfo)
 	if !ok {
-		return nil, errors.New("no alts.AuthInfo found in Context")
+		return nil, errors.New("no alts.AuthInfo found in Peer")
 	}
 	return altsAuthInfo, nil
+}
+
+// ClientAuthorizationCheck checks whether the client is authorized to access
+// the requested resources based on the given expected client service accounts.
+// This API should be used by gRPC server RPC handlers. This API should not be
+// used by clients.
+func ClientAuthorizationCheck(ctx context.Context, expectedServiceAccounts []string) error {
+	authInfo, err := AuthInfoFromContext(ctx)
+	if err != nil {
+		return status.Newf(codes.PermissionDenied, "The context is not an ALTS-compatible context: %v", err).Err()
+	}
+	for _, sa := range expectedServiceAccounts {
+		if authInfo.PeerServiceAccount() == sa {
+			return nil
+		}
+	}
+	return status.Newf(codes.PermissionDenied, "Client %v is not authorized", authInfo.PeerServiceAccount()).Err()
 }

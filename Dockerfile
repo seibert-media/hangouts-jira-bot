@@ -1,30 +1,18 @@
-FROM golang:1.10 as builder
+FROM golang:1.13 as builder
 
-ARG GIT_HOST
-ARG REPO
-ARG NAME
+WORKDIR /src/hangouts-jira-bot
 
-ADD ./ /go/src/${GIT_HOST}/${REPO}/${NAME}
-WORKDIR /go/src/${GIT_HOST}/${REPO}/${NAME}/
+# Copy rest of the application source code
+COPY . ./
 
-RUN make buildgo
-
-CMD ["/bin/bash"]
+# Compile the application to /app.
+RUN CGO_ENABLED=0 GOOS=linux go build -mod=vendor -a -o /app ./cmd/hangouts-jira-bot
 
 FROM scratch
 
-LABEL maintainer //SEIBERT/MEDIA GmbH <docker@seibert-media.net>
-LABEL type "public"
-LABEL versioning "simple"
+LABEL maintainer Team Google <team-google@seibert-media.net>
 
-ARG VERSION
-ARG GIT_HOST
-ARG REPO
-ARG NAME
-
-COPY --from=builder /go/src/${GIT_HOST}/${REPO}/${NAME}/app /
-ADD ./files/go-cloud-debug /
-ADD ./files/source-context.json /
+COPY --from=builder /app /
 COPY files/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-ENTRYPOINT ["./app"]
+ENTRYPOINT ["/app"]

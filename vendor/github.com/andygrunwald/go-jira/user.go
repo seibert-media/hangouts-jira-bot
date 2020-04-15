@@ -15,15 +15,20 @@ type UserService struct {
 
 // User represents a JIRA user.
 type User struct {
-	Self            string     `json:"self,omitempty" structs:"self,omitempty"`
+	Self        string `json:"self,omitempty" structs:"self,omitempty"`
+	AccountID   string `json:"accountId,omitempty" structs:"accountId,omitempty"`
+	AccountType string `json:"accountType,omitempty" structs:"accountType,omitempty"`
+	// TODO: name & key are deprecated, see:
+	// https://developer.atlassian.com/cloud/jira/platform/api-changes-for-user-privacy-announcement/
 	Name            string     `json:"name,omitempty" structs:"name,omitempty"`
-	Password        string     `json:"-"`
 	Key             string     `json:"key,omitempty" structs:"key,omitempty"`
+	Password        string     `json:"-"`
 	EmailAddress    string     `json:"emailAddress,omitempty" structs:"emailAddress,omitempty"`
 	AvatarUrls      AvatarUrls `json:"avatarUrls,omitempty" structs:"avatarUrls,omitempty"`
 	DisplayName     string     `json:"displayName,omitempty" structs:"displayName,omitempty"`
 	Active          bool       `json:"active,omitempty" structs:"active,omitempty"`
 	TimeZone        string     `json:"timeZone,omitempty" structs:"timeZone,omitempty"`
+	Locale          string     `json:"locale,omitempty" structs:"locale,omitempty"`
 	ApplicationKeys []string   `json:"applicationKeys,omitempty" structs:"applicationKeys,omitempty"`
 }
 
@@ -195,7 +200,7 @@ func (s *UserService) Find(property string, tweaks ...userSearchF) ([]User, *Res
 		queryString += param.name + "=" + param.value + "&"
 	}
 
-	apiEndpoint := fmt.Sprintf("/rest/api/2/user/search?" + queryString[:len(queryString)-1])
+	apiEndpoint := fmt.Sprintf("/rest/api/2/user/search?%s", queryString[:len(queryString)-1])
 	req, err := s.client.NewRequest("GET", apiEndpoint, nil)
 	if err != nil {
 		return nil, nil, err

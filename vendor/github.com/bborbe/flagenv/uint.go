@@ -2,10 +2,9 @@ package flagenv
 
 import (
 	"flag"
+	"log"
 	"os"
 	"strconv"
-
-	"github.com/golang/glog"
 )
 
 func Uint(name string, value uint, usage string) *uint {
@@ -20,7 +19,7 @@ func envUint(key string, def uint) uint {
 	if env := os.Getenv(key); env != "" {
 		val, err := strconv.Atoi(env)
 		if err != nil {
-			glog.V(2).Infof("invalid value for %q: using default: %q", key, def)
+			log.Printf("invalid value for %q: using default: %q", key, def)
 			return def
 		}
 		return uint(val)

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hangouts-jira-bot
+  labels:
+    k8s.seibert-media.io/priority: "low"
+  annotations:
+    k8s.seibert-media.io/owner: "Team Google <team-google@seibert-media.net>"
+    k8s.seibert-media.io/source: "https://github.com/seibert-media/hangouts-jira-bot"
+    k8s.seibert-media.io/description: "A Google Chat bot for interacting with Jira Issues."
+    k8s.seibert-media.io/docs: "https://github.com/seibert-media/hangouts-jira-bot"
+data:
+  pubsub-project: "{{_PUBSUB_PROJECT}}"
+  pubsub-topic: "{{_PUBSUB_TOPIC}}"
+  pubsub-subscription: "{{_PUBSUB_SUBSCRIPTION}}"

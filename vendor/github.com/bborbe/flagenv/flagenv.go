@@ -17,3 +17,8 @@ func Parse() {
 func PrintDefaults() {
 	flag.CommandLine.PrintDefaults()
 }
+
+// Set wraps flag.Set
+func Set(name, value string) error {
+	return flag.Set(name, value)
+}

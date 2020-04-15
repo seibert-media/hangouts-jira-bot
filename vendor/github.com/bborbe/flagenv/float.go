@@ -2,10 +2,9 @@ package flagenv
 
 import (
 	"flag"
+	"log"
 	"os"
 	"strconv"
-
-	"github.com/golang/glog"
 )
 
 func Float64(name string, value float64, usage string) *float64 {
@@ -20,7 +19,7 @@ func envFloat64(key string, def float64) float64 {
 	if env := os.Getenv(key); env != "" {
 		val, err := strconv.ParseFloat(env, 64)
 		if err != nil {
-			glog.V(2).Infof("invalid value for %q: using default: %q", key, def)
+			log.Printf("invalid value for %v: using default: %v", key, def)
 			return def
 		}
 		return val

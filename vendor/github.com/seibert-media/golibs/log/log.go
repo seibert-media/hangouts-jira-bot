@@ -2,13 +2,12 @@ package log
 
 import (
 	"context"
-	"fmt"
 	"os"
 
+	"github.com/blendle/zapdriver"
 	"github.com/getsentry/raven-go"
-	"github.com/pkg/errors"
+	"github.com/tchap/zapext/zapsentry"
 	"go.uber.org/zap"
-	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -16,10 +15,11 @@ import (
 type Logger struct {
 	*zap.Logger
 	Sentry *raven.Client
+	Level  zap.AtomicLevel
 
 	dsn   string
-	debug bool
 	nop   bool
+	local bool
 }
 
 // CtxLoggerKey defines the key under which the logger is being stored
@@ -48,6 +48,11 @@ func WithFields(ctx context.Context, fields ...zapcore.Field) context.Context {
 	return WithLogger(ctx, l)
 }
 
+// SetLevel of the logger stored in ctx
+func SetLevel(ctx context.Context, to zapcore.Level) {
+	From(ctx).Level.SetLevel(to)
+}
+
 // WithFieldsOverwrite adds all passed in zap fields to the Logger stored in ctx and overwrites it for further use
 // WARNING: This might kill thread safety - Experimental and bad practice - DO NOT USE!
 func WithFieldsOverwrite(ctx context.Context, fields ...zapcore.Field) *Logger {
@@ -57,23 +62,59 @@ func WithFieldsOverwrite(ctx context.Context, fields ...zapcore.Field) *Logger {
 	return l
 }
 
-// New Logger sentry instance
-func New(dsn string, debug bool) *Logger {
-	sentry, err := raven.New(dsn)
-	if err != nil {
-		panic(err)
+// New Logger instance with an optional sentry key.
+// If no sentry dsn is provided, the sentry encoding is disabled
+// If local is true, logs will be provided in a human readable format, false will print stackdriver conformant logs as json
+func New(dsn string, local bool) (*Logger, error) {
+	level := zap.NewAtomicLevelAt(zap.InfoLevel)
+	return NewWithLevel(dsn, local, level)
+}
+
+// NewWithLevel builds a Logger instance with an optional sentry key and the predefined level.
+// If no sentry dsn is provided, the sentry encoding is disabled
+// If local is true, logs will be provided in a human readable format, false will print stackdriver conformant logs as json
+func NewWithLevel(dsn string, local bool, level zap.AtomicLevel) (*Logger, error) {
+	var (
+		cores  []zapcore.Core
+		sentry *raven.Client
+		err    error
+	)
+
+	if len(dsn) > 0 {
+		sentry, err = raven.New(dsn)
+		if err != nil {
+			return nil, err
+		}
+		cores = append(cores, zapsentry.NewCore(zapcore.ErrorLevel, sentry))
 	}
 
-	logger := buildLogger(sentry, debug)
+	if local {
+		cores = append(cores, buildConsoleLogger(level))
+	} else {
+		stackdriver := zapdriver.NewProductionConfig()
+		stackdriver.Level = level
+
+		l, err := stackdriver.Build()
+		if err != nil {
+			return nil, err
+		}
+		cores = append(cores, l.Core())
+	}
+
+	logger := zap.New(zapcore.NewTee(cores...)).WithOptions(
+		zap.AddCaller(),
+		zap.AddStacktrace(zap.ErrorLevel),
+	)
 
 	return &Logger{
 		Logger: logger,
 		Sentry: sentry,
+		Level:  level,
 
 		dsn:   dsn,
-		debug: debug,
 		nop:   false,
-	}
+		local: local,
+	}, nil
 }
 
 // NewNop returns Logger with empty logging, tracing and ErrorReporting
@@ -95,7 +136,15 @@ func (l *Logger) WithFields(fields ...zapcore.Field) *Logger {
 	if l.nop {
 		return l
 	}
-	log := New(l.dsn, l.debug)
+	log, err := NewWithLevel(l.dsn, l.local, l.Level)
+	if err != nil {
+		l.Error("creating new logger", zap.Error(err))
+		return l
+	}
+
+	if l.Sentry != nil {
+		log.Sentry.SetRelease(l.Sentry.Release())
+	}
 	log.Logger = l.Logger.With(fields...)
 	return log
 }
@@ -110,116 +159,27 @@ func (l *Logger) To(ctx context.Context) context.Context {
 	return WithLogger(ctx, l)
 }
 
-// NewSentryEncoder with dsn
-func NewSentryEncoder(client *raven.Client) zapcore.Encoder {
-	return newSentryEncoder(client)
-}
-
-func newSentryEncoder(client *raven.Client) *sentryEncoder {
-	enc := &sentryEncoder{}
-	enc.Sentry = client
-	return enc
-}
-
-type sentryEncoder struct {
-	zapcore.ObjectEncoder
-	dsn    string
-	Sentry *raven.Client
-}
-
-// Clone .
-func (s *sentryEncoder) Clone() zapcore.Encoder {
-	return newSentryEncoder(s.Sentry)
-}
-
-// EncodeEntry .
-func (s *sentryEncoder) EncodeEntry(e zapcore.Entry, fields []zapcore.Field) (*buffer.Buffer, error) {
-	buf := buffer.NewPool().Get()
-	if e.Level == zapcore.ErrorLevel {
-		tags := make(map[string]string)
-		var err error
-		for _, f := range fields {
-			var tag string
-			switch f.Type {
-			case zapcore.StringType:
-				tag = f.String
-			case zapcore.Int16Type, zapcore.Int32Type, zapcore.Int64Type:
-				tag = fmt.Sprintf("%v", f.Integer)
-			case zapcore.ErrorType:
-				err = f.Interface.(error)
-			}
-			tags[f.Key] = tag
-
-		}
-		if err == nil {
-			s.Sentry.CaptureMessage(e.Message, tags)
-			return buf, nil
-		}
-		s.Sentry.CaptureError(errors.Wrap(err, e.Message), tags)
+// WithRelease returns a new logger updating the internal sentry client with release info
+// This should be the first change to the logger (before adding fields) as otherwise the change
+// might not be persisted
+func (l *Logger) WithRelease(info string) *Logger {
+	if l.nop {
+		return l
 	}
-	return buf, nil
+	l.Sentry.SetRelease(info)
+	return l
 }
 
-func (s *sentryEncoder) AddString(key, val string) {
-	tags := s.Sentry.Tags
-	if tags == nil {
-		tags = make(map[string]string)
-	}
-	tags[key] = val
-	s.Sentry.SetTagsContext(tags)
+// SetLevel of the underlying zap.Logger
+func (l *Logger) SetLevel(to zapcore.Level) {
+	l.Level.SetLevel(to)
 }
 
-func (s *sentryEncoder) AddInt64(key string, val int64) {
-	tags := s.Sentry.Tags
-	if tags == nil {
-		tags = make(map[string]string)
-	}
-	tags[key] = fmt.Sprint(val)
-	s.Sentry.SetTagsContext(tags)
-}
+func buildConsoleLogger(level zap.AtomicLevel) zapcore.Core {
+	stdout := zapcore.Lock(os.Stdout)
 
-// buildLogger
-func buildLogger(sentry *raven.Client, debug bool) *zap.Logger {
-	highPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl >= zapcore.ErrorLevel
-	})
-	lowPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl >= zapcore.InfoLevel && lvl < zapcore.ErrorLevel
-	})
-	debugPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
-		return lvl >= zapcore.DebugLevel && lvl < zapcore.InfoLevel
-	})
+	config := zap.NewDevelopmentEncoderConfig()
+	encoder := zapcore.NewConsoleEncoder(config)
 
-	consoleDebugging := zapcore.Lock(os.Stdout)
-	consoleErrors := zapcore.Lock(os.Stderr)
-	consoleConfig := zap.NewDevelopmentEncoderConfig()
-	consoleEncoder := zapcore.NewConsoleEncoder(consoleConfig)
-	sentryEncoder := NewSentryEncoder(sentry)
-	var core zapcore.Core
-	if debug {
-		core = zapcore.NewTee(
-			zapcore.NewCore(consoleEncoder, consoleErrors, highPriority),
-			zapcore.NewCore(consoleEncoder, consoleDebugging, lowPriority),
-			zapcore.NewCore(consoleEncoder, consoleDebugging, debugPriority),
-		)
-	} else {
-		core = zapcore.NewTee(
-			zapcore.NewCore(consoleEncoder, consoleErrors, highPriority),
-			zapcore.NewCore(consoleEncoder, consoleDebugging, lowPriority),
-			zapcore.NewCore(sentryEncoder, consoleErrors, highPriority),
-		)
-	}
-
-	logger := zap.New(core)
-	if debug {
-		logger = logger.WithOptions(
-			zap.AddCaller(),
-			zap.AddStacktrace(zap.ErrorLevel),
-		)
-	} else {
-		logger = logger.WithOptions(
-			zap.AddStacktrace(zap.FatalLevel),
-		)
-	}
-	return logger
+	return zapcore.NewCore(encoder, stdout, level)
 }
